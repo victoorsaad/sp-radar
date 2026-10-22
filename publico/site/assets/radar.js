@@ -31,9 +31,9 @@
 
   function carregar(kind) {
     if (estado.dados[kind]) return Promise.resolve();
-    return Promise.all([get("data/" + kind + ".json"), get("data/" + kind + "-mapa.json")]).then(function (r) {
+    return Promise.all([get("data/" + kind + ".json"), get("data/" + kind + "-mapa7.json"), get("data/" + kind + "-mapa8.json")]).then(function (r) {
       estado.dados[kind] = r[0];
-      estado.mapas[kind] = r[1];
+      estado.mapas[kind] = { 7: r[1], 8: r[2] };
     });
   }
 
@@ -59,52 +59,62 @@
     return out;
   }
 
+  // Visão da cidade: hexágonos de ~5 km²; a partir do zoom 12,5, de ~0,7 km². As cores usam as
+  // mesmas faixas nas duas escalas para não mudar de tom ao aproximar.
+  var ZOOM_FINO = 12.5, rotulosLayer, tileLayer;
+
+  function resolucao() { return mapa.getZoom() >= ZOOM_FINO ? 8 : 7; }
+
   function desenharMapa() {
-    if (!mapa) {
-      mapa = L_map();
-    }
-    var geo = estado.mapas[estado.kind];
+    if (!mapa) mapa = L_map();
+    var geos = estado.mapas[estado.kind], geo = geos[resolucao()];
     var cores = cssVar("--seq").split(",").map(function (c) { return c.trim(); });
-    var vals = geo.features.map(function (f) { return f.properties.m2; });
-    var br = quebras(vals, cores.length);
+    var br = quebras(geos[8].features.map(function (f) { return f.properties.m2; }), cores.length);
     function cor(v) { var i = 0; while (i < br.length && v > br[i]) i++; return cores[i]; }
     if (camada) mapa.removeLayer(camada);
     camada = window.L.geoJSON(geo, {
       style: function (f) {
-        return { fillColor: cor(f.properties.m2), fillOpacity: 0.78, color: cssVar("--bg-elev"), weight: 1 };
+        return { fillColor: cor(f.properties.m2), fillOpacity: 0.55, stroke: false };
       },
       onEachFeature: function (f, l) {
+        var p = f.properties;
         l.bindTooltip(
-          "<b>" + m2(f.properties.m2) + "</b><br>" + fmt(f.properties.n) + L(" anúncios ativos", " active listings"),
+          (p.b ? '<span class="tt-b">' + esc(p.b) + (resolucao() === 7 ? L(" e arredores", " and around") : "") + "</span><br>" : "") +
+          "<b>" + m2(p.m2) + "</b><br>" + fmt(p.n) + L(" anúncios ativos", " active listings"),
           { sticky: true, direction: "top" }
         );
-        l.on("mouseover", function () { l.setStyle({ weight: 2, color: cssVar("--text") }); l.bringToFront(); });
+        l.on("mouseover", function () { l.setStyle({ stroke: true, weight: 2, color: cssVar("--text"), fillOpacity: 0.75 }); });
         l.on("mouseout", function () { camada.resetStyle(l); });
       }
     }).addTo(mapa);
-    if (mapa._enquadrado !== estado.kind) { mapa.fitBounds(camada.getBounds(), { padding: [8, 8] }); mapa._enquadrado = estado.kind; }
 
     var ticks = [""].concat(br.map(compacto));
     document.getElementById("legenda").innerHTML =
       "<span>" + L("R$/m² mediano", "Median R$/m²") + "</span>" +
       '<div><div class="ramp">' + cores.map(function (c) { return '<span style="background:' + c + '"></span>'; }).join("") + "</div>" +
       '<div class="ticks">' + ticks.map(function (t) { return "<span>" + t + "</span>"; }).join("") + "</div></div>" +
-      '<span class="dim">' + L("cada faixa tem o mesmo número de hexágonos", "each band holds the same number of hexagons") + "</span>";
+      '<span class="dim">' + L("aproxime para ver hexágonos menores, de ~0,7 km²", "zoom in for smaller ~0.7 km² hexagons") + "</span>";
   }
 
   function L_map() {
     var m = window.L.map("mapa", { scrollWheelZoom: false, zoomSnap: 0.5, attributionControl: false })
-      .setView([-23.58, -46.64], 11);
+      .setView([-23.565, -46.65], 11.5);
+    // Nomes de bairros e vias por cima dos hexágonos, sem capturar o mouse.
+    m.createPane("rotulos");
+    m.getPane("rotulos").style.zIndex = 650;
+    m.getPane("rotulos").style.pointerEvents = "none";
     tiles(m);
+    var res = 7;
+    m.on("zoomend", function () { if (resolucao() !== res) { res = resolucao(); desenharMapa(); } });
     return m;
   }
-  var tileLayer;
   function tiles(m) {
-    var escuro = getComputedStyle(root).colorScheme === "dark";
-    var url = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/" +
-      (escuro ? "World_Dark_Gray_Base" : "World_Light_Gray_Base") + "/MapServer/tile/{z}/{y}/{x}";
+    var tom = getComputedStyle(root).colorScheme === "dark" ? "Dark" : "Light";
+    var base = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_" + tom + "_Gray_";
     if (tileLayer) m.removeLayer(tileLayer);
-    tileLayer = window.L.tileLayer(url, { maxZoom: 16, minZoom: 9 }).addTo(m);
+    if (rotulosLayer) m.removeLayer(rotulosLayer);
+    tileLayer = window.L.tileLayer(base + "Base/MapServer/tile/{z}/{y}/{x}", { maxZoom: 16, minZoom: 9 }).addTo(m);
+    rotulosLayer = window.L.tileLayer(base + "Reference/MapServer/tile/{z}/{y}/{x}", { maxZoom: 16, minZoom: 9, pane: "rotulos" }).addTo(m);
   }
 
   /* ---------- gráficos ---------- */

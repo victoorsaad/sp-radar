@@ -24,7 +24,7 @@ import psycopg
 
 K_MIN = 20          # mínimo de anúncios por bairro/recorte
 K_HEX = 10          # mínimo por célula do mapa
-H3_RES = 8          # ~0,74 km² por célula
+H3_RES = (7, 8)     # 7 ≈ 5 km² (visão da cidade), 8 ≈ 0,74 km² (zoom de bairro)
 # A coleta da cidade inteira começou em 04/07/2026; antes disso o histórico é parcial.
 INICIO = date(2026, 7, 6)  # segunda-feira, para a série semanal começar cheia
 
@@ -163,7 +163,7 @@ def gerar_kind(cur, kind):
     rotulos = defaultdict(lambda: defaultdict(int))
     regioes = defaultdict(lambda: defaultdict(int))
     quartos = defaultdict(list)
-    celulas = defaultdict(list)
+    celulas = {r: defaultdict(list) for r in H3_RES}
     for nb, nome, reg, lat, lng, area, q, preco, m2, total, _ in ativos:
         if nb:
             grupos[nb].append((area, preco, m2, total))
@@ -171,7 +171,8 @@ def gerar_kind(cur, kind):
             if reg:
                 regioes[nb][reg] += 1
         quartos[min(q or 0, 4)].append(m2)
-        celulas[h3.latlng_to_cell(lat, lng, H3_RES)].append(m2)
+        for r in H3_RES:
+            celulas[r][h3.latlng_to_cell(lat, lng, r)].append((m2, nome))
 
     bairros = []
     for nb, linhas in grupos.items():
@@ -214,25 +215,38 @@ def gerar_kind(cur, kind):
         for q, v in sorted(quartos.items()) if len(v) >= K_MIN
     ]
 
-    feats = []
-    for cel, v in celulas.items():
-        if len(v) < K_HEX:
-            continue
-        borda = [[lng, lat] for lat, lng in h3.cell_to_boundary(cel)]
-        borda.append(borda[0])
-        feats.append({
-            "type": "Feature",
-            "geometry": {"type": "Polygon", "coordinates": [[[round(x, 5), round(y, 5)] for x, y in borda]]},
-            "properties": {"n": len(v), "m2": arred(mediana(v), a["m2"])},
-        })
-    mapa = {"type": "FeatureCollection", "features": feats}
+    mapas = {r: mapa_hex(cel, a) for r, cel in celulas.items()}
 
     return {
         "resumo": resumo,
         "por_quartos": por_quartos,
         "serie": serie_semanal(cur, kind),
         "bairros": bairros,
-    }, mapa
+    }, mapas
+
+
+def mapa_hex(celulas, a):
+    """GeoJSON com a mediana de R$/m² por célula e o bairro mais comum nela (para o visitante se localizar)."""
+    feats = []
+    for cel, v in celulas.items():
+        if len(v) < K_HEX:
+            continue
+        nomes = defaultdict(int)
+        for _, nome in v:
+            if nome:
+                nomes[nome] += 1
+        borda = [[lng, lat] for lat, lng in h3.cell_to_boundary(cel)]
+        borda.append(borda[0])
+        feats.append({
+            "type": "Feature",
+            "geometry": {"type": "Polygon", "coordinates": [[[round(x, 5), round(y, 5)] for x, y in borda]]},
+            "properties": {
+                "n": len(v),
+                "m2": arred(mediana([x[0] for x in v]), a["m2"]),
+                "b": max(nomes, key=nomes.get) if nomes else None,
+            },
+        })
+    return {"type": "FeatureCollection", "features": feats}
 
 
 def gravar(caminho, obj):
@@ -261,9 +275,10 @@ def main():
                 "k_hex": K_HEX,
             }
             for kind in ("sale", "rent"):
-                dados, mapa = gerar_kind(cur, kind)
+                dados, mapas = gerar_kind(cur, kind)
                 gravar(saida / f"{kind}.json", dados)
-                gravar(saida / f"{kind}-mapa.json", mapa)
+                for r, mapa in mapas.items():
+                    gravar(saida / f"{kind}-mapa{r}.json", mapa)
                 meta[kind] = dados["resumo"]["ativos"]
             gravar(saida / "meta.json", meta)
     print(f"ok: {saida}", file=sys.stderr)

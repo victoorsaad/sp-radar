@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Imóveis SP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#f5f6f8; --panel:#ffffff; --panel2:#f0f2f5; --line:#e3e6ea; --line2:#d3d8de;
+    --txt:#16191d; --muted:#6b7380; --brand:#2f6bff; --brand-ink:#ffffff; --brand-soft:rgba(47,107,255,.10);
+    --g:#1f9d55; --y:#c98a00; --o:#e0661b; --r:#d93a3a; --star:#f5a524;
+    --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
+    --shadow-h:0 8px 24px rgba(16,24,40,.12);
+    --radius:14px; --top:60px;
+  }
+  @media (prefers-color-scheme: dark){ :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1f232c; --line:#272c36; --line2:#343a46;
+    --txt:#e8eaee; --muted:#9097a3; --brand:#5b8cff; --brand-ink:#0b1020; --brand-soft:rgba(91,140,255,.16);
+    --g:#3fb96f; --y:#e0a42a; --o:#f08a4b; --r:#f05d5d;
+    --shadow:0 1px 2px rgba(0,0,0,.4); --shadow-h:0 10px 28px rgba(0,0,0,.45);
+  }}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--txt);
+    font:14px/1.45 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  a{color:var(--brand);text-decoration:none}
+  button{font:inherit;color:inherit}
+  .num,.price{font-variant-numeric:tabular-nums}
+
+  /* ---------- topbar ---------- */
+  .top{position:sticky;top:0;z-index:1000;height:var(--top);display:flex;align-items:center;gap:18px;
+    padding:0 20px;background:color-mix(in srgb,var(--panel) 88%,transparent);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line)}
+  .brand{font-weight:700;font-size:16px;letter-spacing:-.2px;white-space:nowrap}
+  .brand i{font-style:normal;color:var(--brand)}
+  .seg{display:flex;background:var(--panel2);border-radius:10px;padding:3px}
+  .seg button{border:0;background:transparent;padding:6px 14px;border-radius:8px;cursor:pointer;
+    font-weight:600;color:var(--muted)}
+  .seg button.on{background:var(--panel);color:var(--txt);box-shadow:var(--shadow)}
+  nav.tabs{display:flex;gap:2px;margin-left:6px}
+  nav.tabs button{border:0;background:transparent;padding:8px 12px;border-radius:8px;cursor:pointer;
+    color:var(--muted);font-weight:500;white-space:nowrap}
+  nav.tabs button:hover{background:var(--panel2);color:var(--txt)}
+  nav.tabs button.on{color:var(--txt);background:var(--panel2);font-weight:600}
+  .count{font-size:11px;background:var(--brand-soft);color:var(--brand);border-radius:20px;padding:1px 7px;margin-left:4px}
+  .run{margin-left:auto;font-size:12px;color:var(--muted);white-space:nowrap;display:flex;align-items:center;gap:6px}
+  .run .ok{width:8px;height:8px;border-radius:50%;background:var(--g);display:inline-block}
+  .run .bad{background:var(--o)}
+
+  /* ---------- filtros ---------- */
+  .fbar{position:sticky;top:var(--top);z-index:900;background:var(--bg);padding:12px 20px 10px;
+    border-bottom:1px solid var(--line)}
+  .frow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .fld{display:flex;flex-direction:column;gap:3px}
+  .fld label{font-size:11px;color:var(--muted);font-weight:500;padding-left:2px}
+  select,input{background:var(--panel);border:1px solid var(--line2);color:var(--txt);border-radius:10px;
+    padding:8px 10px;font:inherit;font-size:13px;outline:none;min-height:36px}
+  select:focus,input:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+  input[type=number]{width:118px}
+  .nbbox{position:relative;width:190px}
+  #f-regiao{width:170px}
+  .nbbox input{width:100%}
+  .btn{border:1px solid var(--line2);background:var(--panel);border-radius:10px;padding:8px 12px;cursor:pointer;
+    font-weight:500;font-size:13px;min-height:36px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+  .btn:hover{border-color:var(--muted)}
+  .btn.pri{background:var(--brand);border-color:var(--brand);color:var(--brand-ink);font-weight:600}
+  .btn.on{border-color:var(--brand);color:var(--brand);background:var(--brand-soft)}
+  .btn.icon{padding:8px 10px}
+  .toggle{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border:1px solid var(--line2);
+    border-radius:10px;background:var(--panel);cursor:pointer;font-size:13px;user-select:none;min-height:36px}
+  .toggle input{min-height:0;margin:0;accent-color:var(--brand)}
+  .more{display:none;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line2)}
+  .more.open{display:flex}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .chips:empty{display:none}
+  .chip{background:var(--brand-soft);color:var(--brand);border-radius:20px;padding:4px 6px 4px 11px;
+    font-size:12px;font-weight:500;display:inline-flex;align-items:center;gap:4px}
+  .chip button{border:0;background:transparent;color:inherit;cursor:pointer;font-size:14px;line-height:1;padding:0 4px}
+  .sp{flex:1}
+  .fx{flex-wrap:wrap}
+
+  /* ---------- explorar: lista + mapa ---------- */
+  .explore{display:grid;grid-template-columns:minmax(0,1fr) minmax(380px,44%);gap:0}
+  .list{padding:14px 20px 40px}
+  .lhead{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+  .lhead h2{font-size:15px;margin:0;font-weight:600}
+  .lhead .muted{font-size:13px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
+    box-shadow:var(--shadow);transition:box-shadow .15s,transform .15s;display:flex;flex-direction:column;position:relative}
+  .card:hover,.card.hl{box-shadow:var(--shadow-h);transform:translateY(-2px)}
+  .card.dim{opacity:.5}
+  .ph{position:relative;aspect-ratio:4/3;background:var(--panel2);display:block}
+  .ph img{position:relative;z-index:1;width:100%;height:100%;object-fit:cover;display:block}
+  .ph .noimg{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:28px}
+  .acts{position:absolute;z-index:2;top:8px;right:8px;display:flex;gap:6px}
+  .ic{width:32px;height:32px;border-radius:50%;border:0;cursor:pointer;display:grid;place-items:center;
+    background:rgba(255,255,255,.92);color:#333;font-size:15px;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+  .ic:hover{transform:scale(1.08)}
+  .ic.star.on{color:var(--star)}
+  .ic.x:hover{color:#d93a3a}
+  .tags{position:absolute;z-index:2;left:8px;bottom:8px;display:flex;gap:5px;flex-wrap:wrap}
+  .tag{font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;background:rgba(0,0,0,.62);color:#fff;
+    backdrop-filter:blur(4px)}
+  .tag.down{background:#d93a3a}
+  .body{padding:12px 14px 13px;display:flex;flex-direction:column;gap:3px;flex:1}
+  .price{font-size:19px;font-weight:700;letter-spacing:-.3px}
+  .price small{font-size:13px;font-weight:500;color:var(--muted)}
+  .total{font-size:12px;color:var(--muted)}
+  .meta{font-size:13px;margin-top:4px}
+  .where{font-size:13px;font-weight:600;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .addr{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .foot{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:12px;color:var(--muted)}
+  .m2{font-weight:600;font-size:12px;padding:2px 8px;border-radius:20px}
+  .favx{display:flex;gap:6px;margin-top:10px}
+  .favx input{min-height:32px;padding:6px 8px;font-size:12px;width:100%}
+  .delta{font-weight:700}
+  .delta.neg{color:var(--g)} .delta.pos{color:var(--r)}
+  .old{text-decoration:line-through;color:var(--muted);font-size:13px;font-weight:500;margin-left:6px}
+  .pager{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:22px;color:var(--muted);font-size:13px}
+  .empty{padding:60px 20px;text-align:center;color:var(--muted);grid-column:1/-1}
+  .skel{background:linear-gradient(90deg,var(--panel2),var(--line),var(--panel2));background-size:200% 100%;
+    animation:sk 1.2s infinite;border-radius:var(--radius);height:300px}
+  @keyframes sk{to{background-position:-200% 0}}
+
+  .mapwrap{position:sticky;top:calc(var(--top) + var(--fbar,64px));height:calc(100vh - var(--top) - var(--fbar,64px));
+    border-left:1px solid var(--line)}
+  #map{position:absolute;inset:0;background:var(--panel2)}
+  .legend{position:absolute;z-index:500;left:12px;bottom:12px;background:var(--panel);border-radius:12px;
+    box-shadow:var(--shadow-h);padding:9px 12px;font-size:12px}
+  .legend b{display:block;font-size:11px;color:var(--muted);font-weight:600;margin-bottom:5px}
+  .legend span{display:inline-flex;align-items:center;gap:5px;margin-right:10px}
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+  .mapnote{position:absolute;z-index:500;top:12px;left:50%;transform:translateX(-50%);background:var(--panel);
+    border-radius:20px;box-shadow:var(--shadow-h);padding:6px 14px;font-size:12px;font-weight:500;white-space:nowrap}
+  .leaflet-popup-content-wrapper{border-radius:12px;padding:0;overflow:hidden;background:var(--panel);color:var(--txt)}
+  .leaflet-popup-tip{background:var(--panel)}
+  .leaflet-popup-content{margin:0;width:220px!important;font:13px/1.4 Inter,sans-serif}
+  .pop img{width:100%;height:130px;object-fit:cover;display:block;background:var(--panel2)}
+  .pop > div{padding:9px 12px 11px}
+  .pop a{display:inline-block;margin-top:6px;font-weight:600}
+  .pop .price{font-size:16px}
+  .leaflet-container a.leaflet-popup-close-button{color:#fff;text-shadow:0 0 4px #000}
+  .fabmap{display:none}
+  .st{font-weight:600;font-size:12px;padding:2px 8px;border-radius:20px;white-space:nowrap}
+  .st.below{color:var(--g);background:color-mix(in srgb,var(--g) 14%,transparent)}
+  .st.well{color:var(--muted);background:var(--panel2)}
+  .st.above{color:var(--r);background:color-mix(in srgb,var(--r) 14%,transparent)}
+  .lnk{border:0;background:none;color:var(--brand);cursor:pointer;padding:0;font:inherit;font-size:12px;font-weight:600}
+  .foot .r{display:flex;gap:8px;align-items:center}
+  /* painel de detalhes */
+  .dlg{position:fixed;inset:0;z-index:3000;background:rgba(10,12,16,.55);display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:40px 16px}
+  .dlg.open{display:flex}
+  .sheet{background:var(--panel);color:var(--txt);border-radius:18px;max-width:880px;width:100%;box-shadow:var(--shadow-h);overflow:hidden}
+  .sheet header{display:flex;align-items:start;gap:12px;padding:18px 20px;border-bottom:1px solid var(--line)}
+  .sheet header h3{margin:0;font-size:18px}
+  .sheet .x{margin-left:auto;border:0;background:var(--panel2);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:16px}
+  .sheet section{padding:16px 20px;border-bottom:1px solid var(--line)}
+  .sheet h4{margin:0 0 10px;font-size:13px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+  .facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px 16px;font-size:13px}
+  .facts b{display:block;font-size:11px;color:var(--muted);font-weight:500}
+  .range{position:relative;height:10px;border-radius:6px;margin:30px 6px 26px;
+    background:linear-gradient(90deg,var(--g),var(--y) 50%,var(--r))}
+  .range i{position:absolute;top:-6px;width:3px;height:22px;background:var(--txt);border-radius:2px}
+  .range span{position:absolute;font-size:11px;white-space:nowrap;transform:translateX(-50%)}
+  .range .up{top:-22px;font-weight:700} .range .dn{top:16px;color:var(--muted)}
+  .tips{margin:0;padding-left:18px;font-size:13px;line-height:1.6}
+  .sim{width:100%;border-collapse:collapse;font-size:13px}
+  .sim td,.sim th{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left}
+  .sim th{font-size:11px;color:var(--muted);font-weight:600}
+  .sim .n{text-align:right;font-variant-numeric:tabular-nums}
+  .gal{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px}
+  .gal figure{margin:0;flex:0 0 auto} .gal img{height:150px;border-radius:10px;display:block}
+  .gal figcaption{font-size:11px;color:var(--muted);margin-top:3px}
+  .loading{padding:40px;text-align:center;color:var(--muted)}
+
+  /* ---------- mercado ---------- */
+  .page{padding:20px;max-width:1400px;margin:0 auto}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:18px}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow)}
+  .kpi .l{font-size:12px;color:var(--muted);font-weight:500}
+  .kpi .v{font-size:26px;font-weight:700;margin-top:4px;letter-spacing:-.5px}
+  .kpi .s{font-size:12px;color:var(--muted);margin-top:2px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow)}
+  .panel h3{margin:0 0 12px;font-size:14px;font-weight:600}
+  .hint{color:var(--muted);font-size:13px;margin:0 0 14px}
+  .hidden{display:none!important}
+
+  @media (max-width:1100px){
+    nav.tabs button{padding:8px 9px}
+    .run{display:none}
+  }
+  @media (max-width:900px){
+    :root{--top:auto}
+    .top{flex-wrap:wrap;height:auto;padding:10px 16px;gap:10px}
+    nav.tabs{order:3;width:100%;overflow-x:auto;margin:0}
+    .fbar{position:static;padding:12px 16px}
+    .nbbox{flex:1 1 100%;width:auto}
+    .fx{display:none;width:100%;order:5}
+    .fbar.open .fx{display:flex}
+    .fx > *{flex:1 1 140px}
+    .saved{width:100%;order:6} .saved select{flex:1}
+    .legend{bottom:76px}
+    .mapnote{top:auto;bottom:140px;font-size:11px}
+    nav.tabs button{padding:7px 9px}
+    .explore{grid-template-columns:1fr}
+    .list{padding:14px 16px 90px}
+    .mapwrap{position:fixed;inset:0;top:0;height:auto;z-index:1500;border:0;display:none}
+    body.showmap .mapwrap{display:block}
+    .fabmap{display:inline-flex;position:fixed;z-index:1600;bottom:18px;left:50%;transform:translateX(-50%);
+      background:var(--txt);color:var(--bg);border:0;border-radius:24px;padding:11px 20px;font-weight:600;
+      box-shadow:var(--shadow-h);cursor:pointer}
+    .two{grid-template-columns:1fr}
+    .page{padding:16px}
+    .grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">Imóveis <i>SP</i></div>
+  <div class="seg">
+    <button id="k-sale" class="on" onclick="setKind('sale')">Comprar</button>
+    <button id="k-rent" onclick="setKind('rent')">Alugar</button>
+  </div>
+  <nav class="tabs">
+    <button data-tab="explore" class="on" onclick="switchTab('explore')">Explorar</button>
+    <button data-tab="drops" onclick="switchTab('drops')">Quedas de preço</button>
+    <button data-tab="favs" onclick="switchTab('favs')">Favoritos<span id="fav-count" class="count hidden"></span></button>
+    <button data-tab="market" onclick="switchTab('market')">Mercado</button>
+  </nav>
+  <div class="run" id="runinfo">carregando…</div>
+</header>
+
+<!-- ================= EXPLORAR ================= -->
+<section id="tab-explore">
+  <div class="fbar" id="fbar">
+    <div class="frow">
+      <div class="nbbox">
+        <input id="f-bairro-in" list="nb-dl" placeholder="🔍  Bairros…" autocomplete="off" onchange="pickNb(this)">
+        <datalist id="nb-dl"></datalist>
+      </div>
+      <div class="fx frow">
+      <select id="f-regiao" title="Região"><option value="">Todas as regiões</option></select>
+      <select id="f-quartos" title="Quartos"><option value="">Quartos</option>
+        <option value="1">1 quarto</option><option value="2">2 quartos</option><option value="3">3 quartos</option>
+        <option value="4">4 quartos</option><option value="5">5 quartos</option></select>
+      <input id="f-max" type="number" placeholder="Preço até" title="Preço máximo">
+      <input id="f-tmax" type="number" placeholder="Total até" title="Custo total máximo (com condomínio e IPTU)">
+      <label class="toggle"><input type="checkbox" id="f-pet"> 🐾 Pet</label>
+      </div>
+      <button class="btn" id="b-more" onclick="toggleMore()">⚙︎ Filtros <span id="more-n" class="count hidden"></span></button>
+      <button class="btn" onclick="resetFilters()">Limpar</button>
+      <span class="sp"></span>
+      <div class="frow saved">
+      <select id="saved" onchange="loadSearch(this.value)" title="Pesquisas salvas"><option value="">Pesquisas salvas</option></select>
+      <button class="btn icon" onclick="deleteSearch()" title="Excluir pesquisa selecionada">🗑</button>
+      <button class="btn pri" onclick="saveSearch()" title="Salvar pesquisa atual">Salvar</button>
+      </div>
+    </div>
+    <div class="frow more" id="more">
+      <div class="fld"><label id="l-min">Preço mín.</label><input id="f-min" type="number" placeholder="0"></div>
+      <div class="fld"><label>Total mín.</label><input id="f-tmin" type="number" placeholder="0"></div>
+      <div class="fld"><label id="l-m2">R$/m² máx.</label><input id="f-m2" type="number" placeholder="sem limite"></div>
+      <div class="fld"><label>Banheiros</label><select id="f-banh"><option value="">Qualquer</option>
+        <option value="1">1+</option><option value="2">2+</option><option value="3">3+</option><option value="4">4+</option></select></div>
+      <div class="fld"><label>Vagas</label><select id="f-vagas"><option value="">Qualquer</option>
+        <option value="1">1+</option><option value="2">2+</option><option value="3">3+</option></select></div>
+      <div class="fld"><label>Status</label><select id="f-status"><option value="active">À venda / disponível</option>
+        <option value="off_market">Saiu do ar</option></select></div>
+      <div class="fld"><label>&nbsp;</label><label class="toggle"><input type="checkbox" id="f-furn"> 🛋️ Mobiliado</label></div>
+      <div class="fld"><label>&nbsp;</label><label class="toggle"><input type="checkbox" id="f-hidden"> Mostrar ocultos</label></div>
+      <div class="fld"><label>&nbsp;</label><label class="toggle" title="Só imóveis já avaliados pelo QuintoAndar como abaixo do mercado"><input type="checkbox" id="f-below"> 🟢 Abaixo do mercado</label></div>
+    </div>
+    <div class="chips" id="nb-chips"></div>
+  </div>
+
+  <div class="explore">
+    <div class="list">
+      <div class="lhead">
+        <h2 id="rcount">—</h2>
+        <span class="sp"></span>
+        <select id="sort" onchange="setSort(this.value)">
+          <option value="last_seen:desc">Mais recentes</option>
+          <option value="price:asc">Menor preço</option>
+          <option value="price:desc">Maior preço</option>
+          <option value="total_cost:asc">Menor custo total</option>
+          <option value="price_m2:asc">Menor R$/m²</option>
+          <option value="area:desc">Maior área</option>
+          <option value="first_seen:desc">Anunciados há menos tempo</option>
+        </select>
+      </div>
+      <div class="grid" id="rows"></div>
+      <div class="pager">
+        <button class="btn" onclick="changePage(-1)">‹ Anterior</button>
+        <span id="pinfo"></span>
+        <button class="btn" onclick="changePage(1)">Próxima ›</button>
+      </div>
+    </div>
+    <div class="mapwrap">
+      <div id="map"></div>
+      <div class="mapnote" id="mapnote">carregando mapa…</div>
+      <div class="legend" id="legend"></div>
+    </div>
+  </div>
+  <button class="fabmap" id="fabmap" onclick="toggleMapMobile()">🗺 Ver mapa</button>
+</section>
+
+<!-- ================= QUEDAS ================= -->
+<section id="tab-drops" class="page hidden">
+  <p class="hint">Imóveis ativos cujo preço mudou, do mais recente para o mais antigo.</p>
+  <div class="grid" id="drops"></div>
+</section>
+
+<!-- ================= FAVORITOS ================= -->
+<section id="tab-favs" class="page hidden">
+  <p class="hint">Toque na ☆ de qualquer imóvel para favoritar. Quando o preço de um favorito cair, chega um alerta no Discord.
+    O <b>alvo</b> só destaca o alerta quando o preço chegar lá.</p>
+  <div class="grid" id="favs"></div>
+</section>
+
+<!-- ================= MERCADO ================= -->
+<section id="tab-market" class="page hidden">
+  <div class="kpis" id="kpis"></div>
+  <div class="two">
+    <div class="panel"><h3 id="h-bairros">R$/m² médio por bairro</h3><canvas id="chartBairros" height="230"></canvas></div>
+    <div class="panel"><h3 id="h-dist">Distribuição de R$/m²</h3><canvas id="chartDist" height="230"></canvas></div>
+  </div>
+</section>
+
+<div class="dlg" id="dlg" onclick="if(event.target===this)closeDetail()"><div class="sheet" id="sheet"></div></div>
+<script>
+const $ = id => document.getElementById(id);
+const fmt = n => n==null ? "—" : new Intl.NumberFormat("pt-BR").format(Math.round(n));
+const brl = n => n==null ? "—" : "R$ "+fmt(n);
+const brlK = n => n==null ? "—" : n>=1e6 ? "R$ "+(n/1e6).toLocaleString("pt-BR",{maximumFractionDigits:2})+" mi"
+                              : n>=1e4 ? "R$ "+fmt(n/1e3)+" mil" : brl(n);
+const dt  = s => s ? new Date(s).toLocaleDateString("pt-BR",{day:"2-digit",month:"short"}) : "—";
+const j   = u => fetch(u).then(r=>r.json());
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const TYPES = {Apartamento:"Apartamento",Casa:"Casa",CasaCondominio:"Casa em condomínio",StudioOuKitchenette:"Studio"};
+let KIND = "sale";
+let state = {sort:"last_seen", order:"desc", page:1, pageSize:30};
+let favSet = new Set(), hiddenSet = new Set();
+let nbSelected = [], nbByLabel = new Map();
+let curTab = "explore";
+const isRent = () => KIND==="rent";
+const suf = () => isRent() ? "<small>/mês</small>" : "";
+
+/* ---------- cores por R$/m² ---------- */
+const TH = () => isRent() ? [50,90,140] : [8000,12000,18000];
+function m2color(v){ if(v==null) return css("--muted");
+  const t=TH(); return v<t[0]?css("--g"):v<t[1]?css("--y"):v<t[2]?css("--o"):css("--r"); }
+function legendHtml(){
+  const t = isRent() ? ["50","90","140"] : ["8 mil","12 mil","18 mil"];
+  return `<b>${isRent()?"R$/m²/mês":"R$/m²"}</b>
+    <span><i class="dot" style="background:${css("--g")}"></i>até ${t[0]}</span>
+    <span><i class="dot" style="background:${css("--y")}"></i>até ${t[1]}</span>
+    <span><i class="dot" style="background:${css("--o")}"></i>até ${t[2]}</span>
+    <span><i class="dot" style="background:${css("--r")}"></i>acima</span>`;
+}
+
+/* ---------- estado dos filtros (também usado nas pesquisas salvas) ---------- */
+const F = ["f-regiao","f-quartos","f-banh","f-vagas","f-min","f-max","f-tmin","f-tmax","f-m2","f-status"];
+function getState(){
+  return {
+    region: $("f-regiao").value,
+    neighborhoods: nbSelected.map(x=>x.value),
+    neighborhood_labels: nbSelected.map(x=>x.label),
+    bedrooms: $("f-quartos").value, bathrooms: $("f-banh").value, parking: $("f-vagas").value,
+    min_price: $("f-min").value, max_price: $("f-max").value,
+    min_total: $("f-tmin").value, max_total: $("f-tmax").value, max_m2: $("f-m2").value,
+    pets: $("f-pet").checked, furnished: $("f-furn").checked, show_hidden: $("f-hidden").checked,
+    below: $("f-below").checked,
+    status: $("f-status").value,
+  };
+}
+function setState(s){
+  s = s || {};
+  $("f-regiao").value = s.region||"";
+  nbSelected = (s.neighborhoods||[]).map((v,i)=>({value:v, label:(s.neighborhood_labels||[])[i]||v}));
+  renderNbChips();
+  $("f-quartos").value = s.bedrooms||""; $("f-banh").value = s.bathrooms||""; $("f-vagas").value = s.parking||"";
+  $("f-min").value = s.min_price||""; $("f-max").value = s.max_price||"";
+  $("f-tmin").value = s.min_total||""; $("f-tmax").value = s.max_total||""; $("f-m2").value = s.max_m2||"";
+  $("f-pet").checked = !!s.pets; $("f-furn").checked = !!s.furnished; $("f-hidden").checked = !!s.show_hidden;
+  $("f-below").checked = !!s.below;
+  $("f-status").value = s.status||"active";
+  moreCount();
+}
+function stateToParams(s){
+  const p = new URLSearchParams({kind:KIND});
+  if(s.region) p.set("region", s.region);
+  if(s.neighborhoods.length) p.set("neighborhood", s.neighborhoods.join(","));
+  for(const k of ["bedrooms","bathrooms","parking","min_price","max_price","min_total","max_total","max_m2","status"])
+    if(s[k]) p.set(k, s[k]);
+  if(s.pets) p.set("pets","true");
+  if(s.furnished) p.set("furnished","true");
+  if(s.show_hidden) p.set("show_hidden","true");
+  if(s.below) p.set("below","true");
+  return p;
+}
+function moreCount(){
+  const n = ["f-min","f-tmin","f-m2","f-banh","f-vagas"].filter(i=>$(i).value).length
+    + ($("f-status").value!=="active") + $("f-furn").checked + $("f-hidden").checked + $("f-below").checked;
+  $("more-n").textContent = n; $("more-n").classList.toggle("hidden", !n);
+}
+function toggleMore(){ $("more").classList.toggle("open"); $("fbar").classList.toggle("open"); $("b-more").classList.toggle("on"); fbarH(); }
+
+/* ---------- bairros (chips) ---------- */
+function renderNbChips(){
+  $("nb-chips").innerHTML = nbSelected.map(x=>
+    `<span class="chip">${esc(x.label)}<button onclick="removeNb('${esc(x.value)}')" title="Remover">×</button></span>`).join("");
+  fbarH();
+}
+function pickNb(el){
+  const label = el.value.trim(); if(!label) return;
+  const value = nbByLabel.get(label);
+  if(value && !nbSelected.some(x=>x.value===value)) nbSelected.push({value,label});
+  el.value=""; renderNbChips(); applyFilters();
+}
+function removeNb(v){ nbSelected = nbSelected.filter(x=>x.value!==v); renderNbChips(); applyFilters(); }
+
+/* ---------- venda / aluguel ---------- */
+function setKind(k){
+  if(k===KIND) return;
+  KIND = k;
+  $("k-sale").classList.toggle("on", k==="sale"); $("k-rent").classList.toggle("on", k==="rent");
+  const pl = isRent() ? "Aluguel" : "Preço";
+  $("f-max").placeholder = pl+" até"; $("l-min").textContent = pl+" mín.";
+  $("l-m2").textContent = (isRent()?"R$/m²/mês":"R$/m²")+" máx.";
+  nbSelected = []; setState({}); state.page = 1;
+  loadAll();
+}
+
+/* ---------- topo / mercado ---------- */
+async function loadStats(){
+  const s = await j("/api/stats?kind="+KIND);
+  const pl = isRent() ? "aluguel" : "preço";
+  const k = [
+    ["Anúncios ativos", fmt(s.active), (s.new_7d||0).toLocaleString("pt-BR")+" novos em 7 dias"],
+    ["Saíram do ar", fmt(s.off_market), "desde o início da coleta"],
+    ["Mediana "+(isRent()?"R$/m²/mês":"R$/m²"), brl(s.median_m2), "média "+brl(s.avg_m2)],
+    ["Mediana do "+pl, brl(s.median_price), isRent()?"por mês":"imóveis ativos"],
+    ["Quedas de "+pl, fmt(s.price_drops_30d), "últimos 30 dias"],
+  ];
+  $("kpis").innerHTML = k.map(([l,v,sub])=>`<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${sub}</div></div>`).join("");
+  const r = s.last_run;
+  $("runinfo").innerHTML = r
+    ? `<i class="ok ${r.status==='ok'?'':'bad'}"></i> coleta ${r.finished_at?new Date(r.finished_at).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"em andamento"}
+       · ${fmt(r.new_listings)} novos · ${fmt(r.price_changes)} mudanças`
+    : "nenhuma coleta ainda";
+}
+
+let chBairros, chDist;
+async function loadCharts(){
+  const m2u = isRent() ? "R$/m²/mês" : "R$/m²";
+  $("h-bairros").textContent = m2u+" médio nos 20 bairros com mais anúncios";
+  $("h-dist").textContent = "Distribuição de "+m2u;
+  const tick = css("--muted"), grid = css("--line"), txt = css("--txt");
+  Chart.defaults.font.family = "Inter, sans-serif"; Chart.defaults.locale = "pt-BR";
+  const nb = await j("/api/neighborhoods?limit=20&kind="+KIND);
+  nb.sort((a,b)=>b.avg_m2-a.avg_m2);
+  if(chBairros) chBairros.destroy();
+  chBairros = new Chart($("chartBairros"), {type:"bar",
+    data:{labels:nb.map(x=>x.neighborhood), datasets:[{data:nb.map(x=>x.avg_m2),
+      backgroundColor:nb.map(x=>m2color(x.avg_m2)), borderRadius:5, barThickness:12}]},
+    options:{indexAxis:"y",plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>brl(c.raw)+" · "+nb[c.dataIndex].n+" anúncios"}}},
+      scales:{x:{ticks:{color:tick},grid:{color:grid},border:{display:false}},
+              y:{ticks:{color:txt,font:{size:11}},grid:{display:false},border:{display:false}}}}});
+  const d = await j("/api/price-distribution?kind="+KIND);
+  if(chDist) chDist.destroy();
+  chDist = new Chart($("chartDist"), {type:"bar",
+    data:{labels:d.map(x=>fmt(x.label)), datasets:[{data:d.map(x=>x.n),
+      backgroundColor:d.map(x=>m2color(x.label)), borderRadius:4}]},
+    options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmt(c.raw)+" anúncios"}}},
+      scales:{x:{ticks:{color:tick,maxTicksLimit:10},grid:{display:false},border:{display:false}},
+              y:{ticks:{color:tick},grid:{color:grid},border:{display:false}}}}});
+}
+
+/* ---------- mapa ---------- */
+let map, mapLayer, markers = new Map();
+const DARK = matchMedia("(prefers-color-scheme: dark)").matches;
+function initMap(){
+  map = L.map("map",{preferCanvas:true, zoomControl:false}).setView([-23.56,-46.64],11);
+  L.control.zoom({position:"topright"}).addTo(map);
+  // Esri Canvas: grátis e sem chave (o CARTO passou a exigir API key em out/2026)
+  const base = DARK ? "World_Dark_Gray" : "World_Light_Gray";
+  const esri = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/";
+  L.tileLayer(esri+base+"_Base/MapServer/tile/{z}/{y}/{x}",{maxZoom:16,attribution:"Tiles © Esri — Esri, HERE, Garmin, © OpenStreetMap"}).addTo(map);
+  map.createPane("rotulos").style.zIndex = 350;   // nomes de ruas acima do fundo e abaixo dos pontos
+  L.tileLayer(esri+base+"_Reference/MapServer/tile/{z}/{y}/{x}",{maxZoom:16,pane:"rotulos"}).addTo(map);
+  // acima do zoom 16 o Canvas da Esri não tem tile: usa o OSM padrão
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{minZoom:17,maxZoom:19,attribution:"© OpenStreetMap"}).addTo(map);
+  map.setMaxZoom(19);
+}
+function popHtml(p){
+  return `<div class="pop">${p.cover_image?`<img src="${esc(p.cover_image)}" loading="lazy" onerror="this.remove()">`:""}
+    <div><div class="price">${brlK(p.price)}${suf()}</div>
+    ${p.total_cost?`<div class="total">${brl(p.total_cost)} no total</div>`:""}
+    <div class="meta">${p.area?fmt(p.area)+" m²":""}${p.bedrooms?" · "+p.bedrooms+" qto"+(p.bedrooms>1?"s":""):""}</div>
+    <div class="where">${esc(p.neighborhood)}</div>
+    <a href="https://www.quintoandar.com.br/imovel/${p.id}" target="_blank" rel="noopener">Ver no QuintoAndar ↗</a></div></div>`;
+}
+let mapSeq = 0;
+async function loadMap(){
+  if(!map) initMap();
+  $("legend").innerHTML = legendHtml();
+  $("mapnote").textContent = "carregando…"; $("mapnote").classList.remove("hidden");
+  const seq = ++mapSeq;
+  const p = stateToParams(getState()); p.set("limit", 3000);
+  const pts = await j("/api/map?"+p.toString());
+  if(seq!==mapSeq) return;
+  if(mapLayer) mapLayer.remove();
+  mapLayer = L.featureGroup().addTo(map); markers = new Map();
+  pts.forEach(p=>{
+    const m = L.circleMarker([p.lat,p.lng],{radius:5,weight:1,color:"rgba(255,255,255,.7)",
+      fillColor:m2color(p.price_m2),fillOpacity:.85}).bindPopup(popHtml(p),{maxWidth:220,minWidth:220}).addTo(mapLayer);
+    markers.set(p.id, m);
+  });
+  const filtered = nbSelected.length || $("f-regiao").value;
+  if(filtered && pts.length) map.fitBounds(mapLayer.getBounds(),{padding:[30,30],maxZoom:15});
+  $("mapnote").textContent = pts.length>=3000 ? "amostra de 3.000 imóveis · filtre para ver todos"
+    : pts.length ? fmt(pts.length)+" imóveis no mapa" : "nenhum imóvel com localização";
+}
+function hl(id,on){
+  const m = markers.get(id); if(!m) return;
+  m.setStyle(on?{radius:10,weight:3,color:css("--txt")}:{radius:5,weight:1,color:"rgba(255,255,255,.7)"});
+  if(on) m.bringToFront();
+}
+function showOnMap(id){
+  const m = markers.get(id); if(!m) return;
+  if(innerWidth<=900) toggleMapMobile(true);
+  map.setView(m.getLatLng(), Math.max(map.getZoom(),15)); m.openPopup();
+}
+function toggleMapMobile(force){
+  const on = force ?? !document.body.classList.contains("showmap");
+  document.body.classList.toggle("showmap", on);
+  $("fabmap").textContent = on ? "☰ Ver lista" : "🗺 Ver mapa";
+  if(on) setTimeout(()=>map.invalidateSize(),50);
+}
+
+/* ---------- cards ---------- */
+function photo(r, acts){
+  return `<div class="ph">${r.cover_image?`<img src="${esc(r.cover_image)}" loading="lazy" alt="" onerror="this.remove()">`:""}
+    <span class="noimg">🏠</span>${acts||""}</div>`;
+}
+function starBtn(id){ const on=favSet.has(id);
+  return `<button class="ic star ${on?'on':''}" title="${on?'Remover dos favoritos':'Favoritar'}" onclick="event.stopPropagation();toggleFav(${id},this)">${on?'★':'☆'}</button>`; }
+function hideBtn(id){ const h=hiddenSet.has(id);
+  return `<button class="ic x" title="${h?'Reexibir':'Não gostei · ocultar'}" onclick="event.stopPropagation();${h?'unhide':'hide'}(${id},this)">${h?'↩':'✕'}</button>`; }
+function meta(r){
+  return [r.area?fmt(r.area)+" m²":null, r.bedrooms?r.bedrooms+" qto"+(r.bedrooms>1?"s":""):null,
+    r.bathrooms?r.bathrooms+" banh":null, r.parking?r.parking+" vaga"+(r.parking>1?"s":""):null].filter(Boolean).join(" · ");
+}
+const regiao = r => r.region && r.region!==r.neighborhood ? ` <span class="addr">· ${esc(r.region)}</span>` : "";
+function m2chip(v){ if(!v) return "";
+  const c = m2color(v); return `<span class="m2" style="color:${c};background:color-mix(in srgb,${c} 14%,transparent)">${brl(v)}/m²</span>`; }
+
+async function loadListings(){
+  const s = getState();
+  const p = stateToParams(s);
+  p.set("sort",state.sort); p.set("order",state.order); p.set("page",state.page); p.set("page_size",state.pageSize);
+  $("rows").innerHTML = Array(6).fill('<div class="skel"></div>').join("");
+  const data = await j("/api/listings?"+p.toString());
+  $("rcount").textContent = data.total===1 ? "1 imóvel" : fmt(data.total)+" imóveis";
+  $("rows").innerHTML = data.rows.map(r=>{
+    const tags = [r.price_changed_at?`<span class="tag down">↓ baixou</span>`:"",
+      r.accepts_pets?`<span class="tag">🐾 pet</span>`:"", r.is_furnished?`<span class="tag">🛋️ mobiliado</span>`:""].join("");
+    return `<article class="card ${hiddenSet.has(r.id)?'dim':''}" data-id="${r.id}"
+        onmouseenter="hl(${r.id},true)" onmouseleave="hl(${r.id},false)">
+      <a href="${esc(r.link)}" target="_blank" rel="noopener">${photo(r, `<div class="acts">${starBtn(r.id)}${hideBtn(r.id)}</div><div class="tags">${tags}</div>`)}</a>
+      <div class="body">
+        <div class="price">${brlK(r.price)}${suf()}</div>
+        <div class="total">${r.total_cost?brl(r.total_cost)+(isRent()?"/mês":"")+" com condomínio e IPTU":"&nbsp;"}</div>
+        <div class="meta">${meta(r)}</div>
+        <div class="where">${esc(r.neighborhood||"—")}${regiao(r)}</div>
+        <div class="addr">${esc(r.address)}${r.type?" · "+esc(TYPES[r.type]||r.type):""}</div>
+        <div class="foot">${stChip(r)}
+          <span class="r">${r.lat?`<a href="#" onclick="event.preventDefault();showOnMap(${r.id})">mapa</a>`:""}
+            <button class="lnk" onclick="openDetail(${r.id})">${r.price_state?"detalhes":"avaliar"}</button></span></div>
+      </div></article>`;}).join("") || `<div class="empty">Nenhum imóvel com esses filtros.</div>`;
+  const pages = Math.max(1, Math.ceil(data.total/data.page_size));
+  $("pinfo").textContent = data.total ? `página ${state.page} de ${fmt(pages)}` : "";
+}
+
+/* ---------- avaliação do QuintoAndar ---------- */
+const ST = {BELOW_PRICED:["below","🟢 abaixo do mercado"],WELL_PRICED:["well","⚪ no preço"],OVER_PRICED:["above","🔴 acima do mercado"],ABOVE_PRICED:["above","🔴 acima do mercado"]};
+function stChip(r){
+  if(!r.price_state) return m2chip(r.price_m2);
+  const [c,t] = ST[r.price_state]||["well",r.price_state];
+  const price = r.price ?? r.current_price;
+  const d = r.suggested_price && price ? Math.round((price-r.suggested_price)/r.suggested_price*100) : null;
+  return `<span class="st ${c}" title="Sugerido pelo QuintoAndar: ${brl(r.suggested_price)}">${t}${d?` ${d>0?"+":""}${d}%`:""}</span>`;
+}
+const dias = s => s ? Math.max(0,Math.round((Date.now()-new Date(s))/864e5)) : null;
+async function openDetail(id){
+  $("dlg").classList.add("open"); document.body.style.overflow="hidden";
+  $("sheet").innerHTML = `<div class="loading">Buscando ficha e avaliação no QuintoAndar… (até 15 s)</div>`;
+  let e = await j(`/api/enrichment/${KIND}/${id}`);
+  if(!e || e.error || (Date.now()-new Date(e.fetched_at)) > 864e5)
+    e = await fetch(`/api/enrich/${KIND}/${id}`,{method:"POST"}).then(r=>r.json());
+  const l = (await j(`/api/listing/${id}?kind=${KIND}`)).listing || {};
+  renderDetail(l, e||{});
+  if(curTab==="explore") loadListings(); else if(curTab==="favs") loadFavorites();
+}
+function closeDetail(){ $("dlg").classList.remove("open"); document.body.style.overflow=""; }
+function renderDetail(l, e){
+  const sfx = isRent()?"/mês":"";
+  const price = l.price, sug = e.suggested_price;
+  const d = sug && price ? Math.round((price-sug)/sug*100) : null;
+  const pos = v => Math.min(100,Math.max(0,(v-e.p10)/(e.p90-e.p10)*100));
+  // o QuintoAndar reinicia a data de publicação quando o preço muda: usa a mais antiga
+  // entre ela e a primeira vez que a nossa coleta viu o anúncio (base começa em 04/07/2026)
+  const desde = [e.first_published_at, l.first_seen].filter(Boolean).sort((a,b)=>new Date(a)-new Date(b))[0];
+  const nd = dias(desde);
+  const yes = v => v===true?"sim":v===false?"não":"—";
+  const facts = [
+    ["Andar", e.floor_min!=null ? (e.floor_max&&e.floor_max!==e.floor_min?`${e.floor_min}º a ${e.floor_max}º`:`${e.floor_min}º`) : "—"],
+    ["Portaria", e.doorman==="NightAndDayShift"?"24 h":e.doorman||"—"], ["Perto do metrô", yes(e.near_subway)],
+    ["Sol", [e.morning_sun&&"manhã", e.afternoon_sun&&"tarde"].filter(Boolean).join(" e ")||"—"],
+    ["Vista livre", yes(e.clear_view)], ["Rua silenciosa", yes(e.quiet_street)], ["Varanda", yes(e.balcony)],
+    ["Elevador", yes(e.elevator)], ["Piscina / academia", `${yes(e.pool)} / ${yes(e.gym)}`],
+    ["Condomínio", e.condo_name||"—"], ["Condomínio + IPTU", e.condo_price!=null?`${brl(e.condo_price)} + ${brl(e.iptu)}`:"—"],
+    ["No ar há", nd!=null?`${nd} dias (desde ${new Date(desde).toLocaleDateString("pt-BR")})`:"—"],
+    ["Aceita contraproposta", yes(e.custom_offer ?? e.direct_offer)], ["Visitas", e.is_reserved?"reservado":e.visit_status==="ACCEPT_NEW"?"abertas":e.visit_status||"—"],
+  ];
+  const tips = [];
+  if(e.price_state==="BELOW_PRICED") tips.push(`O preço já está <b>${Math.abs(d)}% abaixo</b> do que o QuintoAndar sugere (${brl(sug)}${sfx}). Pouca margem para pedir desconto; o risco é perder para outra pessoa.`);
+  if(e.price_state==="OVER_PRICED"||e.price_state==="ABOVE_PRICED") tips.push(`Está <b>${d}% acima</b> do sugerido (${brl(sug)}${sfx}). Dá para abrir a proposta perto de ${brl(e.faster_price||sug)}${sfx}.`);
+  if(e.price_state==="WELL_PRICED" && e.faster_price) tips.push(`No preço. O QuintoAndar diria ao proprietário que <b>${brl(e.faster_price)}${sfx}</b> fecha mais rápido — boa âncora para a contraproposta.`);
+  if(nd!=null && nd>60) tips.push(`No ar há <b>${nd} dias</b>: o proprietário tende a aceitar desconto.`);
+  if(l.price_changed_at) tips.push(`O preço já mudou desde ${new Date(l.price_changed_at).toLocaleDateString("pt-BR")}: sinal de que o proprietário está ajustando.`);
+  if(nd!=null && nd<7) tips.push(`Anunciado há ${nd} dia(s): imóveis bons saem rápido, vale visitar logo.`);
+  if((e.custom_offer ?? e.direct_offer)===true) tips.push("O anúncio aceita contraproposta direto pelo app.");
+  const sim = e.similares||{}, sm = sim.summary||{};
+  const off = (sim.unavailableSimilarHouses||[]).slice(0,10), on = (sim.availableSimilarHouses||[]).slice(0,10);
+  const simRow = h => `<tr><td>${h.houseId?`<a href="https://www.quintoandar.com.br/imovel/${h.houseId}" target="_blank" rel="noopener">${esc(h.neighborhood||h.address||"—")}</a>`:esc(h.neighborhood||h.address||"—")}</td>
+    <td class="n">${h.area?h.area+" m²":"—"}</td><td class="n">${brl(isRent()?(h.priceRent??h.price):h.price)}</td>
+    <td class="n">${h.distance?(h.distance<1?Math.round(h.distance*1000)+" m":h.distance.toFixed(1)+" km"):"—"}</td>
+    <td class="n">${h.lastTimeOnMarket?new Date(h.lastTimeOnMarket).toLocaleDateString("pt-BR",{month:"short",year:"numeric"}):"no ar"}</td></tr>`;
+  const photos = (e.photos||[]).filter(p=>p.url);
+  $("sheet").innerHTML = `
+    <header><div><h3>${esc(l.neighborhood||"Imóvel")} · ${brl(price)}${sfx}</h3>
+      <div class="addr">${esc(l.address||"")} · ${meta(l)}</div></div>
+      <a class="btn" href="${esc(l.link||"#")}" target="_blank" rel="noopener">Abrir no QuintoAndar ↗</a>
+      <button class="x" onclick="closeDetail()" title="Fechar">✕</button></header>
+    ${e.error && !sug ? `<section><p class="hint">Não consegui avaliar agora: ${esc(e.error)}</p></section>` : ""}
+    ${sug ? `<section><h4>Avaliação do QuintoAndar ${stChip({price, price_state:e.price_state, suggested_price:sug})}</h4>
+      <div class="range">
+        <i style="left:${pos(sug)}%"></i><span class="up" style="left:${pos(sug)}%">sugerido ${brlK(sug)}</span>
+        <i style="left:${pos(price)}%;background:var(--brand)"></i><span class="dn" style="left:${pos(price)}%;color:var(--brand)">anunciado ${brlK(price)}</span>
+      </div>
+      <div class="facts"><div><b>Faixa justa</b>${brlK(e.p10)} – ${brlK(e.p90)}</div><div><b>Faixa provável</b>${brlK(e.p30)} – ${brlK(e.p70)}</div>
+        <div><b>Para fechar rápido</b>${brlK(e.faster_price)}${sfx}</div><div><b>Confiança</b>${({high:"alta",medium:"média",low:"baixa"})[e.certainty]||e.certainty||"—"}</div></div></section>` : ""}
+    ${tips.length?`<section><h4>Para negociar</h4><ul class="tips">${tips.map(t=>`<li>${t}</li>`).join("")}</ul></section>`:""}
+    <section><h4>Ficha</h4><div class="facts">${facts.map(([k,v])=>`<div><b>${k}</b>${esc(v)}</div>`).join("")}</div></section>
+    ${off.length?`<section><h4>Parecidos que saíram do ar ${sm.offMarketPriceAverage||sm.offMarketRentAverage?`· média ${brl(isRent()?(sm.offMarketRentAverage??sm.offMarketPriceAverage):sm.offMarketPriceAverage)}`:""}</h4>
+      <table class="sim"><tr><th>Onde</th><th class="n">Área</th><th class="n">${isRent()?"Aluguel":"Preço"}</th><th class="n">Distância</th><th class="n">Saiu</th></tr>${off.map(simRow).join("")}</table></section>`:""}
+    ${on.length?`<section><h4>Parecidos ainda no ar ${sm.onMarketPriceAverage||sm.onMarketRentAverage?`· média ${brl(isRent()?(sm.onMarketRentAverage??sm.onMarketPriceAverage):sm.onMarketPriceAverage)}`:""}</h4>
+      <table class="sim"><tr><th>Onde</th><th class="n">Área</th><th class="n">${isRent()?"Aluguel":"Preço"}</th><th class="n">Distância</th><th class="n"></th></tr>${on.map(simRow).join("")}</table></section>`:""}
+    ${photos.length?`<section><h4>Fotos (${photos.length})</h4><div class="gal">${photos.map(p=>`<figure><img loading="lazy" src="https://www.quintoandar.com.br/img/med/${esc(p.url)}" alt=""><figcaption>${esc(p.room||"")}</figcaption></figure>`).join("")}</div></section>`:""}
+    <section class="hint" style="margin:0;font-size:12px">Atualizado ${e.fetched_at?new Date(e.fetched_at).toLocaleString("pt-BR"):"agora"} · dados públicos do QuintoAndar</section>`;
+}
+addEventListener("keydown", ev=>{ if(ev.key==="Escape") closeDetail(); });
+
+/* ---------- favoritos ---------- */
+async function loadFavIds(){ favSet = new Set(await j("/api/favorite-ids?kind="+KIND)); favCount(); }
+function favCount(){ $("fav-count").textContent = favSet.size; $("fav-count").classList.toggle("hidden", !favSet.size); }
+async function toggleFav(id, el){
+  if(favSet.has(id)){
+    await fetch(`/api/favorites/${KIND}/${id}`, {method:"DELETE"}); favSet.delete(id);
+  } else {
+    await fetch("/api/favorites", {method:"POST",headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({id, kind:KIND})}); favSet.add(id);
+  }
+  if(el){ const on=favSet.has(id); el.textContent=on?"★":"☆"; el.classList.toggle("on",on);
+    el.title = on?"Remover dos favoritos":"Favoritar"; }
+  favCount();
+  if(curTab==="favs") loadFavorites();
+}
+async function saveFav(id, patch){
+  await fetch("/api/favorites", {method:"POST",headers:{"Content-Type":"application/json"},
+    body: JSON.stringify(Object.assign({id, kind:KIND}, patch))});
+}
+async function loadFavorites(){
+  const d = await j("/api/favorites?kind="+KIND);
+  $("favs").innerHTML = d.map(r=>{
+    const dl = r.delta_pct==null||r.delta_pct===0 ? "" :
+      `<span class="delta ${r.delta_pct<0?'neg':'pos'}">${r.delta_pct>0?"+":""}${String(r.delta_pct).replace(".",",")}% desde que favoritou</span>`;
+    const tags = (r.status!=="active"?`<span class="tag down">saiu do ar</span>`:"")
+      + (r.target_price&&r.current_price<=r.target_price?`<span class="tag" style="background:#1f9d55">🎯 bateu o alvo</span>`:"");
+    return `<article class="card">
+      <a href="${esc(r.link)}" target="_blank" rel="noopener">${photo(r, `<div class="acts">${starBtn(r.id)}</div><div class="tags">${tags}</div>`)}</a>
+      <div class="body">
+        <div class="price">${brlK(r.current_price)}${suf()}</div>
+        <div class="total">${dl || (r.total_cost?brl(r.total_cost)+" no total":"&nbsp;")}</div>
+        <div class="meta">${meta(r)}</div>
+        <div class="where">${esc(r.neighborhood||"—")}</div>
+        <div class="addr">${esc(r.address)}</div>
+        <div class="foot">${stChip(r)}<button class="lnk" onclick="openDetail(${r.id})">${r.price_state?"detalhes":"avaliar"}</button></div>
+        <div class="favx">
+          <input type="number" value="${r.target_price??''}" placeholder="Alvo (R$)" title="Preço-alvo"
+            onclick="event.stopPropagation()" onchange="saveFav(${r.id},{target_price:this.value?+this.value:null, note:this.nextElementSibling.value||null})">
+          <input value="${esc(r.note)}" placeholder="Nota" title="Nota"
+            onchange="saveFav(${r.id},{note:this.value||null, target_price:this.previousElementSibling.value?+this.previousElementSibling.value:null})">
+        </div>
+      </div></article>`;}).join("") || `<div class="empty">Nenhum favorito ainda. Toque na ☆ de um imóvel.</div>`;
+}
+
+/* ---------- ocultos ---------- */
+async function loadHiddenIds(){ hiddenSet = new Set(await j("/api/hidden-ids?kind="+KIND)); }
+async function hide(id, el){
+  await fetch("/api/hidden", {method:"POST",headers:{"Content-Type":"application/json"}, body: JSON.stringify({id, kind:KIND})});
+  hiddenSet.add(id);
+  const card = el.closest(".card");
+  if($("f-hidden").checked){ card.classList.add("dim"); el.outerHTML = hideBtn(id); }
+  else { card.remove(); const m=markers.get(id); if(m){ mapLayer.removeLayer(m); markers.delete(id);} }
+}
+async function unhide(id, el){
+  await fetch(`/api/hidden/${KIND}/${id}`, {method:"DELETE"});
+  hiddenSet.delete(id);
+  el.closest(".card").classList.remove("dim"); el.outerHTML = hideBtn(id);
+}
+
+/* ---------- pesquisas salvas ---------- */
+async function loadSavedList(){
+  const d = await j("/api/searches?kind="+KIND);
+  window._searches = d;
+  $("saved").innerHTML = '<option value="">Pesquisas salvas</option>'+d.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("");
+}
+async function saveSearch(){
+  const name = prompt("Nome da pesquisa:"); if(!name) return;
+  await fetch("/api/searches", {method:"POST",headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({name, kind:KIND, params:getState()})});
+  await loadSavedList();
+}
+function loadSearch(id){
+  if(!id) return;
+  const s = (window._searches||[]).find(x=>String(x.id)===String(id)); if(!s) return;
+  setState(s.params); applyFilters();
+}
+async function deleteSearch(){
+  const id = $("saved").value;
+  if(!id){ alert("Escolha uma pesquisa salva primeiro."); return; }
+  if(!confirm("Excluir esta pesquisa salva?")) return;
+  await fetch(`/api/searches/${id}`, {method:"DELETE"});
+  await loadSavedList();
+}
+
+/* ---------- abas / filtros ---------- */
+function switchTab(t){
+  curTab = t;
+  document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===t));
+  for(const x of ["explore","drops","favs","market"]) $("tab-"+x).classList.toggle("hidden", x!==t);
+  if(t==="drops") loadDrops();
+  if(t==="favs") loadFavorites();
+  if(t==="market") loadCharts();
+  if(t==="explore" && map) setTimeout(()=>map.invalidateSize(),50);
+  scrollTo(0,0);
+}
+let deb;
+function applyFilters(){ clearTimeout(deb); deb = setTimeout(()=>{ state.page=1; moreCount(); loadListings(); loadMap(); }, 350); }
+function resetFilters(){ setState({}); applyFilters(); }
+function changePage(d){ state.page=Math.max(1,state.page+d); loadListings(); $("rows").scrollIntoView({block:"start"}); scrollBy(0,-200); }
+function setSort(v){ const [s,o]=v.split(":"); state.sort=s; state.order=o; state.page=1; loadListings(); }
+function fbarH(){ document.documentElement.style.setProperty("--fbar", $("fbar").offsetHeight+"px"); if(map) map.invalidateSize(); }
+
+async function loadDrops(){
+  const d = await j("/api/price-drops?limit=80&kind="+KIND);
+  $("drops").innerHTML = d.map(r=>{
+    const neg = r.pct_change<0;
+    return `<article class="card">
+      <a href="${esc(r.link)}" target="_blank" rel="noopener">${photo(r, `<div class="acts">${starBtn(r.id)}</div>
+        <div class="tags"><span class="tag ${neg?'down':''}">${r.pct_change>0?"+":""}${String(r.pct_change).replace(".",",")}%</span></div>`)}</a>
+      <div class="body">
+        <div class="price">${brlK(r.current_price)}${suf()}<span class="old">${brlK(r.first_price)}</span></div>
+        <div class="total">mudou em ${dt(r.price_changed_at)}</div>
+        <div class="meta">${meta(r)}</div>
+        <div class="where">${esc(r.neighborhood||"—")}${regiao(r)}</div>
+        <div class="addr">${esc(r.address)}</div>
+      </div></article>`;}).join("") || `<div class="empty">Nenhuma queda registrada ainda.</div>`;
+}
+
+async function loadFilters(){
+  const [nbs, regs] = await Promise.all([j("/api/neighborhood-list?kind="+KIND), j("/api/region-list?kind="+KIND)]);
+  nbByLabel = new Map();
+  $("nb-dl").innerHTML = nbs.map(x=>{ nbByLabel.set(x.label, x.value); return `<option value="${esc(x.label)}">`; }).join("");
+  $("f-regiao").innerHTML = '<option value="">Todas as regiões</option>'+regs.map(x=>`<option value="${esc(x.value)}">${esc(x.label)}</option>`).join("");
+}
+
+for(const id of F) $(id).addEventListener("change", applyFilters);
+for(const id of ["f-pet","f-furn","f-hidden","f-below"]) $(id).addEventListener("change", applyFilters);
+addEventListener("resize", fbarH);
+
+async function loadAll(){
+  loadStats();
+  await Promise.all([loadFilters(), loadFavIds(), loadHiddenIds(), loadSavedList()]);
+  fbarH();
+  loadListings(); loadMap();
+  if(curTab==="drops") loadDrops();
+  else if(curTab==="favs") loadFavorites();
+  else if(curTab==="market") loadCharts();
+}
+loadAll();
+</script>
+</body>
+</html>

@@ -21,7 +21,7 @@
   })();
 </script>
 <link rel="stylesheet" href="assets/vendor/leaflet.css">
-<link rel="stylesheet" href="assets/radar.css">
+<link rel="stylesheet" href="assets/radar.css?v=3">
 </head>
 <body>
 <header class="top">
@@ -53,7 +53,7 @@
   <section class="card">
     <div class="card-head">
       <h2><span lang="pt">Preço por m² no mapa</span><span lang="en">Price per m² on the map</span></h2>
-      <p class="note"><span lang="pt">Mediana do preço pedido em hexágonos de ~0,7 km². Hexágonos com menos de <b class="k-hex"></b> anúncios ficam de fora.</span><span lang="en">Median asking price in ~0.7 km² hexagons. Hexagons with fewer than <b class="k-hex"></b> listings are left out.</span></p>
+      <p class="note"><span lang="pt">Mediana do preço pedido por área. Passe o mouse para ver o bairro; aproxime para mais detalhe. Áreas com menos de <b class="k-hex"></b> anúncios ficam de fora.</span><span lang="en">Median asking price by area. Hover to see the neighbourhood; zoom in for detail. Areas with fewer than <b class="k-hex"></b> listings are left out.</span></p>
     </div>
     <div id="mapa" role="img" aria-label="Mapa de preço por m² / Price per m² map"></div>
     <div class="legend" id="legenda"></div>
@@ -122,6 +122,6 @@
 
 <script src="assets/vendor/leaflet.js"></script>
 <script src="assets/vendor/chart.umd.min.js"></script>
-<script src="assets/radar.js"></script>
+<script src="assets/radar.js?v=3"></script>
 </body>
 </html>
