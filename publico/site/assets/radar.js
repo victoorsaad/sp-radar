@@ -46,7 +46,8 @@
   function carregar() {
     var c = chave();
     if (st.cache[c]) return Promise.resolve();
-    return Promise.all([get("data/" + c + ".json"), get("data/" + c + "-mapa7.json"), get("data/" + c + "-mapa8.json")]).then(function (r) {
+    var g = "?g=" + encodeURIComponent(st.meta.gerado_em);  // muda a cada geração: o cache da borda nunca mistura versões
+    return Promise.all([get("data/" + c + ".json" + g), get("data/" + c + "-mapa7.json" + g), get("data/" + c + "-mapa8.json" + g)]).then(function (r) {
       st.cache[c] = r[0];
       st.mapas[c] = { 7: r[1], 8: r[2] };
       var nomes = {};

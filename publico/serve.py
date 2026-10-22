@@ -76,6 +76,9 @@ class Handler(SimpleHTTPRequestHandler):
         p = self.path.split("?", 1)[0]
         if p.startswith("/assets/"):
             self.send_header("Cache-Control", "public, max-age=86400")
+        elif p == "/data/meta.json":
+            # o meta diz qual geração está no ar; os outros JSON são pedidos com ?g=<geração>
+            self.send_header("Cache-Control", "public, max-age=60")
         elif p.startswith("/data/"):
             self.send_header("Cache-Control", "public, max-age=900")
         else:
