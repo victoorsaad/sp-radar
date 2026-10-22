@@ -1,0 +1,9 @@
+[Unit]
+Description=Radar público: gera os agregados todo dia às 07:30 (a coleta começa 05:30 e leva ~1h)
+
+[Timer]
+OnCalendar=*-*-* 07:30
+Persistent=true
+
+[Install]
+WantedBy=timers.target

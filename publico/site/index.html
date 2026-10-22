@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="pt-BR" data-lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Radar imobiliário de SP</title>
+<meta name="description" content="Preço por m², estoque, quedas de preço e tempo até sair do ar em cada bairro de São Paulo, atualizado todo dia. Só dados agregados.">
+<meta property="og:title" content="Radar imobiliário de SP">
+<meta property="og:description" content="Preço por m², estoque e quedas de preço por bairro de São Paulo, atualizado todo dia.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%2357d2c8' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%2357d2c8'/%3E%3C/svg%3E">
+<script>
+  (function () {
+    var d = document.documentElement;
+    try {
+      var t = localStorage.getItem("theme");
+      if (t) d.setAttribute("data-theme", t);
+      var q = new URLSearchParams(location.search).get("lang");
+      var l = q || localStorage.getItem("lang") || ((navigator.language || "").toLowerCase().indexOf("pt") === 0 ? "pt" : "en");
+      if (l === "pt" || l === "en") { d.setAttribute("data-lang", l); d.lang = l === "pt" ? "pt-BR" : "en"; }
+    } catch (e) {}
+  })();
+</script>
+<link rel="stylesheet" href="assets/vendor/leaflet.css">
+<link rel="stylesheet" href="assets/radar.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-row">
+    <a class="brand" href="https://saadcloud.com.br/">VICTOR SAAD</a>
+    <div class="top-ctl">
+      <button class="chip" id="lang-btn" type="button" aria-label="Idioma / Language"><span lang="pt">EN</span><span lang="en">PT</span></button>
+      <button class="chip" id="theme-btn" type="button"><span lang="pt">Tema</span><span lang="en">Theme</span></button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <p class="eyebrow"><span lang="pt">Dados de mercado · atualizado todo dia</span><span lang="en">Market data · updated daily</span></p>
+    <h1><span lang="pt">Radar imobiliário <em>de São Paulo</em></span><span lang="en">São Paulo <em>housing radar</em></span></h1>
+    <p class="lede">
+      <span lang="pt">Quanto custa o m² em cada bairro, quantos imóveis estão no ar, quantos baixaram o preço e quanto tempo levam para sair do mercado. Calculado todo dia a partir de anúncios públicos da cidade inteira.</span>
+      <span lang="en">What a square metre costs in each neighbourhood, how many homes are listed, how many cut their price and how long they take to leave the market. Recomputed every day from public listings across the whole city.</span>
+    </p>
+    <div class="seg" role="tablist" aria-label="Venda ou aluguel / Sale or rent">
+      <button role="tab" data-kind="sale" aria-selected="true"><span lang="pt">Venda</span><span lang="en">For sale</span></button>
+      <button role="tab" data-kind="rent" aria-selected="false"><span lang="pt">Aluguel</span><span lang="en">For rent</span></button>
+    </div>
+  </section>
+
+  <section class="kpis" id="kpis" aria-live="polite"></section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2><span lang="pt">Preço por m² no mapa</span><span lang="en">Price per m² on the map</span></h2>
+      <p class="note"><span lang="pt">Mediana do preço pedido em hexágonos de ~0,7 km². Hexágonos com menos de <b class="k-hex"></b> anúncios ficam de fora.</span><span lang="en">Median asking price in ~0.7 km² hexagons. Hexagons with fewer than <b class="k-hex"></b> listings are left out.</span></p>
+    </div>
+    <div id="mapa" role="img" aria-label="Mapa de preço por m² / Price per m² map"></div>
+    <div class="legend" id="legenda"></div>
+  </section>
+
+  <section class="grid2">
+    <div class="card">
+      <div class="card-head">
+        <h2><span lang="pt">Entradas e saídas por semana</span><span lang="en">Listings in and out, weekly</span></h2>
+        <p class="note"><span lang="pt">Anúncios novos e anúncios que saíram do ar.</span><span lang="en">New listings and listings that left the market.</span></p>
+      </div>
+      <div class="chart"><canvas id="ch-fluxo"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <h2><span lang="pt">R$/m² dos anúncios novos</span><span lang="en">R$/m² of new listings</span></h2>
+        <p class="note"><span lang="pt">Mediana do preço pedido de quem entrou no mercado naquela semana.</span><span lang="en">Median asking price of homes listed that week.</span></p>
+      </div>
+      <div class="chart"><canvas id="ch-m2"></canvas></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2><span lang="pt">Bairros</span><span lang="en">Neighbourhoods</span></h2>
+      <p class="note"><span lang="pt">Só bairros com pelo menos <b class="k-min"></b> anúncios ativos. Clique no cabeçalho para ordenar.</span><span lang="en">Only neighbourhoods with at least <b class="k-min"></b> active listings. Click a header to sort.</span></p>
+    </div>
+    <div class="filters">
+      <input type="search" id="busca" placeholder="Buscar bairro / Search" aria-label="Buscar bairro / Search neighbourhood">
+      <select id="regiao" aria-label="Região / Area"></select>
+    </div>
+    <div class="table-wrap"><table id="tabela"></table></div>
+  </section>
+
+  <section class="card method">
+    <h2><span lang="pt">Como funciona</span><span lang="en">How it works</span></h2>
+    <div lang="pt">
+      <p>Todo dia de manhã um coletor lê os anúncios públicos de venda e aluguel da cidade inteira e guarda o histórico: cada mudança de preço e cada vez que um imóvel sai do ar ou volta. Esta página mostra só agregados desse histórico.</p>
+      <ul>
+        <li><b>Nenhum anúncio individual é publicado.</b> Sem endereço, foto, link ou localização exata. Bairros com menos de <b class="k-min"></b> anúncios e hexágonos com menos de <b class="k-hex"></b> são suprimidos, e os valores são arredondados.</li>
+        <li><b>Preço pedido não é preço de venda.</b> É o que o anunciante pede; o fechamento costuma ser menor.</li>
+        <li><b>"Saiu do ar"</b> pode ser venda, locação ou só o anúncio retirado. O tempo até sair conta apenas imóveis que entraram depois de <span class="desde"></span>, quando a coleta passou a cobrir a cidade inteira.</li>
+        <li><b>Queda de preço</b> é a parcela dos anúncios ativos que reduziram o preço pelo menos uma vez nos últimos 90 dias.</li>
+        <li>Anúncios com área ou R$/m² fora de faixas plausíveis são descartados como erro de cadastro.</li>
+      </ul>
+      <p class="fine">Não é avaliação de imóvel nem recomendação de investimento. Atualizado em <span class="gerado"></span>.</p>
+    </div>
+    <div lang="en">
+      <p>Every morning a collector reads the public sale and rental listings for the whole city and keeps the history: each price change and each time a home leaves the market or comes back. This page shows only aggregates of that history.</p>
+      <ul>
+        <li><b>No individual listing is published.</b> No address, photo, link or exact location. Neighbourhoods with fewer than <b class="k-min"></b> listings and hexagons with fewer than <b class="k-hex"></b> are suppressed, and values are rounded.</li>
+        <li><b>Asking price is not sale price.</b> It is what the seller asks; deals usually close lower.</li>
+        <li><b>"Left the market"</b> can mean sold, rented or simply withdrawn. Time to exit only counts homes listed after <span class="desde"></span>, when collection started covering the whole city.</li>
+        <li><b>Price cut</b> is the share of active listings that lowered their price at least once in the last 90 days.</li>
+        <li>Listings with an implausible area or R$/m² are discarded as data-entry errors.</li>
+      </ul>
+      <p class="fine">Not a property valuation or investment advice. Updated <span class="gerado"></span>.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap foot">
+  <span><span lang="pt">Feito por</span><span lang="en">Built by</span> <a href="https://saadcloud.com.br/">Victor Saad</a></span>
+  <span class="dim"><span lang="pt">Mapa</span><span lang="en">Map</span> © Esri · OpenStreetMap</span>
+</footer>
+
+<script src="assets/vendor/leaflet.js"></script>
+<script src="assets/vendor/chart.umd.min.js"></script>
+<script src="assets/radar.js"></script>
+</body>
+</html>

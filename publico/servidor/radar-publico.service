@@ -1,0 +1,43 @@
+[Unit]
+Description=Radar imobiliário de SP, site público (estático, porta 8102)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=radar
+Group=radar
+Type=simple
+WorkingDirectory=/opt/radar-publico
+ExecStart=/usr/bin/python3 /opt/radar-publico/serve.py 8102
+Restart=always
+RestartSec=5
+# Só enxerga /opt/radar-publico, só leitura; sem acesso ao socket do Postgres.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+TemporaryFileSystem=/opt:ro /srv:ro /mnt:ro /media:ro
+BindReadOnlyPaths=/opt/radar-publico
+InaccessiblePaths=-/var/lib/postgresql -/var/run/postgresql -/run/postgresql -/var/backups -/root -/etc/postgresql
+CapabilityBoundingSet=
+AmbientCapabilities=
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+RestrictAddressFamilies=AF_INET AF_INET6
+MemoryMax=256M
+
+[Install]
+WantedBy=multi-user.target
