@@ -493,5 +493,19 @@
     document.querySelectorAll("main .sec").forEach(function (sec) { obs.observe(sec); });
   }
 
+  // estrelas e forks do repositório; se a API do GitHub falhar, os botões ficam sem número
+  fetch("https://api.github.com/repos/victoorsaad/sp-radar", { headers: { Accept: "application/vnd.github+json" } })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (g) {
+      if (!g) return;
+      document.querySelectorAll(".gh-n").forEach(function (e) { e.textContent = nf(g.stargazers_count); });
+      document.querySelectorAll(".gh-f").forEach(function (e) { e.textContent = nf(g.forks_count); });
+      document.querySelectorAll(".gh-stars, .gh-forks").forEach(function (e) { e.hidden = false; });
+      document.querySelectorAll(".gh-upd").forEach(function (e) {
+        e.textContent = L("atualizado em ", "updated ") + new Date(g.pushed_at).toLocaleDateString(en() ? "en-GB" : "pt-BR", { day: "numeric", month: "short" });
+        e.hidden = false;
+      });
+    }).catch(function () {});
+
   get("data/meta.json").then(function (m) { st.meta = m; return aplicar(); }).catch(falhou);
 })();

@@ -20,7 +20,7 @@
   })();
 </script>
 <link rel="stylesheet" href="assets/vendor/leaflet.css">
-<link rel="stylesheet" href="assets/radar.css?v=6">
+<link rel="stylesheet" href="assets/radar.css?v=7">
 </head>
 <body>
 <header class="bar" id="bar">
@@ -45,6 +45,15 @@
       <span lang="pt">Quanto custa, onde há oferta, quanto dá para negociar e quanto tempo um imóvel fica no mercado, em cada bairro da cidade. Para quem compra e para quem aluga, calculado todo dia a partir do histórico de mais de 300 mil anúncios.</span>
       <span lang="en">What it costs, where the supply is, how much room there is to negotiate and how long a home stays on the market, in every neighbourhood of the city. For buyers and renters, recomputed daily from the history of more than 300,000 listings.</span>
     </p>
+    <div class="hero-cta">
+      <a class="btn" href="https://github.com/victoorsaad/sp-radar" target="_blank" rel="noopener"><svg class="gh-ico" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><span lang="pt">Código aberto no GitHub</span><span lang="en">Open source on GitHub</span><span class="gh-stars" hidden>★ <b class="gh-n"></b></span></a>
+      <a class="btn ghost" href="#metodo"><span lang="pt">Como é calculado</span><span lang="en">How it's computed</span></a>
+    </div>
+    <aside class="callout" role="note">
+      <b><span lang="pt">Informativo, não é recomendação financeira.</span><span lang="en">For information only, not financial advice.</span></b>
+      <span lang="pt">Os números são estatísticas sobre o histórico de preços <em>pedidos</em> em anúncios, não preços de fechamento nem avaliação de imóvel. Não use esta página como sugestão de compra, venda, aluguel ou investimento; consulte um profissional.</span>
+      <span lang="en">Figures are statistics on the history of <em>asking</em> prices in listings, not closing prices or a property valuation. Do not use this page as a recommendation to buy, sell, rent or invest; talk to a professional.</span>
+    </aside>
     <div class="stamp" id="stamp"></div>
   </section>
 
@@ -186,6 +195,20 @@
 
   <section class="sec wrap method" id="metodo">
     <div class="sec-h"><span class="num">08</span><h2><span lang="pt">Como é calculado</span><span lang="en">How it's computed</span></h2></div>
+    <div class="g2 method-top">
+      <a class="gh-card" href="https://github.com/victoorsaad/sp-radar" target="_blank" rel="noopener">
+        <span class="gh-head"><svg class="gh-ico" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><span>victoorsaad / <b>sp-radar</b></span><span class="gh-badge">Public</span></span>
+        <span class="gh-desc"><span lang="pt">Coletor diário, histórico de preços e este site, de ponta a ponta. Licença MIT.</span><span lang="en">Daily collector, price history and this site, end to end. MIT licensed.</span></span>
+        <span class="gh-meta"><span><i class="dot"></i>Python</span><span class="gh-stars" hidden>★ <b class="gh-n"></b></span><span class="gh-forks" hidden><span lang="pt">forks</span><span lang="en">forks</span> <b class="gh-f"></b></span><span class="gh-upd" hidden></span></span>
+        <span class="gh-go"><span lang="pt">Ver o código →</span><span lang="en">View the code →</span></span>
+      </a>
+      <div class="card">
+        <h3><span lang="pt">Dados públicos</span><span lang="en">Public data</span></h3>
+        <p lang="pt">Todos os dados usados são públicos: anúncios que qualquer pessoa vê no site do portal, sem login nem cadastro. Nada de dado pessoal entra no cálculo, e o que sai daqui são só estatísticas agregadas por bairro e por área, nunca um anúncio individual.</p>
+        <p lang="en">All data used is public: listings anyone can see on the portal's website, with no login or sign-up. No personal data goes into the computation, and only aggregate statistics by neighbourhood and area come out, never an individual listing.</p>
+        <p class="fine"><span lang="pt">Projeto pessoal, sem relação com nenhum portal imobiliário.</span><span lang="en">Personal project, not affiliated with any listings portal.</span></p>
+      </div>
+    </div>
     <div lang="pt">
       <ul>
         <li><b>Fonte.</b> Todo dia de manhã um coletor lê os anúncios públicos de venda e aluguel da cidade inteira e guarda o histórico: cada mudança de preço e cada vez que um imóvel sai do ar ou volta. O código está em <a href="https://github.com/victoorsaad/sp-radar" rel="noopener">github.com/victoorsaad/sp-radar</a>.</li>
@@ -196,7 +219,7 @@
         <li><b>Rentabilidade bruta</b> é aluguel × 12 ÷ preço, comparando apartamentos com o mesmo número de quartos no mesmo bairro e ponderando pela oferta à venda. Não desconta vacância, IR, IPTU, condomínio nem manutenção.</li>
         <li><b>Variações</b> comparam a média das últimas <span class="tend"></span> semanas com as <span class="tend"></span> anteriores.</li>
       </ul>
-      <p class="fine">Não é avaliação de imóvel nem recomendação de investimento. Atualizado em <span class="gerado"></span>.</p>
+      <p class="fine">Não é avaliação de imóvel nem recomendação financeira ou de investimento: os cálculos se baseiam no histórico de anúncios. Atualizado em <span class="gerado"></span>.</p>
     </div>
     <div lang="en">
       <ul>
@@ -208,7 +231,7 @@
         <li><b>Gross yield</b> is rent × 12 ÷ price, comparing homes with the same number of bedrooms in the same neighbourhood, weighted by the supply for sale. It ignores vacancy, tax, condo fees and upkeep.</li>
         <li><b>Changes</b> compare the average of the last <span class="tend"></span> weeks with the <span class="tend"></span> weeks before.</li>
       </ul>
-      <p class="fine">Not a property valuation or investment advice. Updated <span class="gerado"></span>.</p>
+      <p class="fine">Not a property valuation, nor financial or investment advice: the figures are based on listing history. Updated <span class="gerado"></span>.</p>
     </div>
   </section>
 </main>
@@ -231,6 +254,6 @@
 
 <script src="assets/vendor/leaflet.js"></script>
 <script src="assets/vendor/chart.umd.min.js"></script>
-<script src="assets/radar.js?v=6"></script>
+<script src="assets/radar.js?v=7"></script>
 </body>
 </html>

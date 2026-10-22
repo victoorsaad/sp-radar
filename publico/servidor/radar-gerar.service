@@ -21,4 +21,4 @@ ProtectControlGroups=yes
 RestrictNamespaces=yes
 LockPersonality=yes
 SystemCallArchitectures=native
-OnFailure=homelab-alerta@%n.service
+# Opcional: avisar se falhar, ex. OnFailure=alerta@%n.service

@@ -21,7 +21,7 @@ CSP = (
     "script-src 'self' 'sha256-{inline}'; "
     "style-src 'self' 'unsafe-inline'; "  # o Leaflet posiciona camadas com style=
     "img-src 'self' data: https://server.arcgisonline.com; "
-    "font-src 'self'; connect-src 'self'; "
+    "font-src 'self'; connect-src 'self' https://api.github.com; "
     "frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
 )
 

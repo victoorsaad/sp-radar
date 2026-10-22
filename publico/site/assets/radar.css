@@ -226,3 +226,30 @@ footer.foot { background: var(--paper); padding: 60px var(--pad) 30px; font-size
   .btn-sm, .menu-btn em { display: none; }
   .f-cols { grid-template-columns: 1fr 1fr; }
 }
+
+/* chamada para o código e aviso */
+.hero-cta { display: flex; gap: 10px; flex-wrap: wrap; margin: 6px 0 26px; }
+.btn { display: inline-flex; align-items: center; gap: 10px; padding: 13px 20px; border-radius: 2px; background: var(--green); color: #fff; border: 1px solid var(--green);
+  font-size: 13px; font-weight: 500; letter-spacing: .06em; text-decoration: none; transition: background .3s, color .3s; }
+.btn:hover { background: #163f33; }
+.btn.ghost { background: transparent; color: var(--green); border-color: var(--border-lit); }
+.btn.ghost:hover { border-color: var(--green); }
+.btn .gh-stars { border-left: 1px solid rgba(255, 255, 255, .3); padding-left: 10px; font-weight: 400; }
+.btn .gh-stars b { color: #fff; }
+.gh-ico { flex: none; }
+.callout { max-width: 760px; border: 1px solid var(--border); border-left: 3px solid var(--gold); background: var(--bg-elev); padding: 16px 20px; border-radius: 2px;
+  font-size: 14px; line-height: 1.55; color: var(--text-dim); margin-bottom: 22px; }
+.callout b { display: block; color: var(--text); margin-bottom: 4px; }
+.method-top { margin-bottom: 30px; }
+.gh-card { display: flex; flex-direction: column; gap: 12px; padding: 24px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-elev);
+  color: var(--text); text-decoration: none; transition: border-color .3s, transform .6s var(--ease); }
+.gh-card:hover { border-color: var(--green); transform: translateY(-3px); }
+.gh-head { display: flex; align-items: center; gap: 10px; font-size: 16px; color: var(--green); flex-wrap: wrap; }
+.gh-head b { font-weight: 600; }
+.gh-badge { font-size: 11px; color: var(--mute-l); border: 1px solid var(--border-lit); border-radius: 999px; padding: 1px 8px; }
+.gh-desc { font-size: 14px; color: var(--text-dim); }
+.gh-meta { display: flex; gap: 18px; flex-wrap: wrap; font-size: 12px; color: var(--mute-l); }
+.gh-meta b { font-weight: 500; color: var(--text); }
+.gh-meta .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #3572a5; margin-right: 6px; vertical-align: -1px; }
+.gh-go { margin-top: auto; font-size: 11px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--green); }
+.gh-card:hover .gh-go { color: var(--gold); }

@@ -32,6 +32,10 @@ cp config/.env.example config/.env   # ajuste a senha
 Site público: `pip install "psycopg[binary]" h3`, `python publico/gerar.py` e `python publico/serve.py`. Units do systemd de exemplo em `publico/servidor/`.
 
 ## Aviso
+**Não é recomendação financeira.** Os números são estatísticas sobre o histórico de anúncios e não devem ser usados como sugestão de compra, venda, aluguel ou investimento.
+
+Dados: só informação pública, visível a qualquer visitante do portal sem login; nenhum dado pessoal é coletado ou publicado. Segredos (senha do banco, webhook) ficam em `config/.env`, fora do git; veja `config/.env.example`.
+
 Projeto pessoal e educacional, sem relação com o QuintoAndar. Usa endpoints que o próprio site chama, sem login, num ritmo baixo. Leia os termos de uso do portal antes de rodar a coleta e não republique anúncios individuais. Os números são preços **pedidos**, não de fechamento, e não são avaliação de imóvel.
 
 ---
@@ -46,6 +50,8 @@ Listing sites show you today; this keeps the film. Every day it collects São Pa
 - `publico/`: the public site. `gerar.py` turns the database into **aggregate-only** JSON (neighbourhoods with fewer than 20 listings and hexagons with fewer than 10 are suppressed, values rounded), `site/` is the static page and `serve.py` an allowlisted static server with no database access.
 
 The portal's search caps results at 1,000 per query, so the scraper splits the city into a quadtree until every cell fits (~350 requests per run). A run that sees fewer than half of the previously active listings never marks the rest as off-market.
+
+**Not financial advice.** Figures are statistics on listing history; do not use them as a recommendation to buy, sell, rent or invest. Only public data is used (visible to any visitor without login); no personal data is collected or published. Secrets live in `config/.env`, which is git-ignored.
 
 **Disclaimer:** personal, educational project, not affiliated with QuintoAndar. It calls endpoints the public website itself uses, without login, at a low rate. Check the portal's terms before running the collector and do not republish individual listings. Figures are asking prices, not sale prices, and not a valuation.
 
