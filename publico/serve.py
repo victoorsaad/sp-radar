@@ -18,10 +18,10 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "site")
 
 CSP = (
     "default-src 'self'; "
-    "script-src 'self' 'sha256-{inline}'; "
+    "script-src 'self' 'sha256-{inline}' https://static.cloudflareinsights.com; "
     "style-src 'self' 'unsafe-inline'; "  # o Leaflet posiciona camadas com style=
     "img-src 'self' data: https://server.arcgisonline.com; "
-    "font-src 'self'; connect-src 'self' https://api.github.com; "
+    "font-src 'self'; connect-src 'self' https://api.github.com https://cloudflareinsights.com; "
     "frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
 )
 
@@ -40,7 +40,7 @@ def is_public(path):
     parts = [p for p in path.split("/") if p]
     if not parts or any(p.startswith(".") or p == ".." for p in parts):
         return False
-    if parts == ["index.html"]:
+    if parts in (["index.html"], ["robots.txt"], ["sitemap.xml"]):
         return True
     if parts[0] == "assets":
         return len(parts) > 1 and os.path.isfile(os.path.join(ROOT, *parts))

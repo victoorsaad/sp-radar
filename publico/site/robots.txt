@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://spradar.saadcloud.com.br/sitemap.xml
