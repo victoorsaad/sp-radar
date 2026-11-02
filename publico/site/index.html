@@ -27,7 +27,7 @@
   })();
 </script>
 <link rel="stylesheet" href="assets/vendor/leaflet.css">
-<link rel="stylesheet" href="assets/radar.css?v=8">
+<link rel="stylesheet" href="assets/radar.css?v=9">
 <link rel="canonical" href="https://spradar.saadcloud.com.br/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Radar imobiliário de São Paulo","alternateName":"SP Radar","url":"https://spradar.saadcloud.com.br/","applicationCategory":"ReferenceApplication","operatingSystem":"Web","inLanguage":["pt-BR","en"],"isAccessibleForFree":true,"isPartOf":{"@type":"WebSite","name":"SaadCloud","url":"https://saadcloud.com.br/"},"author":{"@type":"Person","name":"Victor Saad","url":"https://saadcloud.com.br/"},"codeRepository":"https://github.com/victoorsaad/sp-radar"}</script>
 </head>
@@ -48,11 +48,13 @@
 
 <main>
   <section class="hero wrap">
+   <div class="hero-main">
     <h1><span lang="pt">Radar imobiliário de São Paulo</span><span lang="en">São Paulo housing radar</span></h1>
     <p class="lede">
       <span lang="pt">Quanto custa, onde há oferta, quanto dá para negociar e quanto tempo um imóvel fica no mercado, em cada bairro da cidade. Para quem compra e para quem aluga, calculado todo dia a partir do histórico de mais de 300 mil anúncios.</span>
       <span lang="en">What it costs, where the supply is, how much room there is to negotiate and how long a home stays on the market, in every neighbourhood of the city. For buyers and renters, recomputed daily from the history of more than 300,000 listings.</span>
     </p>
+    <div class="stamp" id="stamp"></div>
     <div class="hero-cta">
       <a class="btn" href="https://github.com/victoorsaad/sp-radar" target="_blank" rel="noopener"><svg class="gh-ico" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><span lang="pt">Código aberto no GitHub</span><span lang="en">Open source on GitHub</span><span class="gh-stars" hidden><b class="gh-n"></b> <span lang="pt">estrela<span class="gh-pl">s</span></span><span lang="en">star<span class="gh-pl">s</span></span></span></a>
       <a class="btn ghost" href="#metodo"><span lang="pt">Como é calculado</span><span lang="en">How it's computed</span></a>
@@ -62,7 +64,8 @@
       <span lang="pt">Os números são estatísticas sobre o histórico de preços <em>pedidos</em> em anúncios, não preços de fechamento nem avaliação de imóvel. Não use esta página como sugestão de compra, venda, aluguel ou investimento; consulte um profissional.</span>
       <span lang="en">Figures are statistics on the history of <em>asking</em> prices in listings, not closing prices or a property valuation. Do not use this page as a recommendation to buy, sell, rent or invest; talk to a professional.</span>
     </aside>
-    <div class="stamp" id="stamp"></div>
+   </div>
+    <div class="hero-num" id="hero-num" aria-live="polite"></div>
   </section>
 
   <div class="ctl">
@@ -262,7 +265,7 @@
 
 <script src="assets/vendor/leaflet.js"></script>
 <script src="assets/vendor/chart.umd.min.js"></script>
-<script src="assets/radar.js?v=8"></script>
+<script src="assets/radar.js?v=9"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "354930048dbc445c9ef025ea7dfbc98f"}'></script><!-- token público do beacon; gitleaks:allow -->
 </body>
 </html>

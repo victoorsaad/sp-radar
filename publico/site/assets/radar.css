@@ -64,10 +64,24 @@ button, input, select { font: inherit; color: inherit; }
 .menu-open .btn-sm { background: transparent; border: 1px solid currentColor; }
 
 /* ---------- abertura ---------- */
-.hero { padding-top: 84px; padding-bottom: 36px; }
-.hero h1 { font-size: clamp(40px, 5.6vw, 76px); font-weight: 200; letter-spacing: -.025em; line-height: 1.04; margin: 0 0 20px; max-width: 15ch; }
-.hero .lede { font-size: var(--fs-l); max-width: 680px; color: var(--text); }
-.stamp { font-size: var(--fs-s); color: var(--mute-l); }
+/* topo como tela de app: título substantivo, uma frase de contexto, carimbo, e à direita o número da tela */
+.hero { padding-top: 48px; padding-bottom: 36px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 440px); gap: 24px 48px; align-items: start; }
+.hero h1 { font-size: var(--fs-h); font-weight: 300; letter-spacing: -.015em; line-height: 1.15; margin: 0 0 10px; }
+.hero .lede { font-size: var(--fs-b); max-width: 640px; color: var(--text); margin-bottom: 8px; }
+.stamp { font-size: var(--fs-s); color: var(--mute-l); margin-bottom: 20px; }
+.hero-num { background: var(--bg-elev); border-radius: 4px; padding: 24px; }
+.hn-lbl { font-size: var(--fs-s); font-weight: 500; color: var(--mute-l); }
+.hn-val { font-size: var(--fs-xl); font-weight: 200; letter-spacing: -.02em; line-height: 1.1; margin: 6px 0 4px; white-space: nowrap; }
+.hn-sub { font-size: var(--fs-s); color: var(--mute-l); }
+.hn-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); font-size: var(--fs-s); color: var(--mute-l); }
+.hn-row b { display: block; font-size: var(--fs-l); font-weight: 300; color: var(--text); }
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; gap: 0; padding-top: 32px; }
+  .hero h1, .sec-h h2 { font-size: 24px; }
+  .hero-main { display: contents; }
+  .hero-num { order: 1; margin-bottom: 20px; }
+  .hero .hero-cta { order: 2; } .hero .callout { order: 3; }
+}
 
 /* ---------- barra de filtros fixa ---------- */
 .ctl { position: sticky; top: 62px; z-index: 1000; background: var(--paper); }

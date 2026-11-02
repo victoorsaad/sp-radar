@@ -77,6 +77,19 @@
     $("leitura").innerHTML = partes.join(" ");
   }
 
+  /* topo: o número que responde "quanto custa aqui?" para o filtro escolhido (mesmo resumo dos KPIs) */
+  function heroNum() {
+    var r = D().resumo, sem = st.meta.tendencia_semanas, t = tipoNome();
+    var lbl = rent() ? L("Custo mensal mediano", "Median monthly cost") : L("Preço por m², mediana", "Price per m², median");
+    var val = rent() ? brl(r.total) : brl(r.m2);
+    var ctx = rent() ? L(t + " para alugar", t + " for rent") : L(t + " à venda", t + " for sale");
+    var sub = rent()
+      ? L("aluguel " + brl(r.preco) + " + condomínio e IPTU", "rent " + brl(r.preco) + " + fees and tax")
+      : delta(r.var_m2, false) + " " + L("anúncios novos, " + sem + " sem.", "new listings, " + sem + " wks");
+    $("hero-num").innerHTML = '<div class="hn-lbl">' + lbl + " · " + ctx + '</div><div class="hn-val">' + val + '</div><div class="hn-sub">' + sub + "</div>" +
+      '<div class="hn-row"><div><b>' + nf(r.ativos) + "</b>" + L("anúncios ativos", "active listings") + "</div><div><b>" + nf(r.dias) + "</b>" + L("dias até sair", "days on market") + "</div><div><b>" + pctTxt(r.pct_queda) + "</b>" + L("baixaram o preço", "cut their price") + "</div></div>";
+  }
+
   function kpis() {
     var r = D().resumo, sem = st.meta.tendencia_semanas;
     var itens = [
@@ -421,7 +434,7 @@
 
   /* ---------- orquestração ---------- */
   function tudo() {
-    leitura(); kpis(); tipologia(); desenharMapa(); orcamento(); regioes(); tabela(); negociacao(); extra(); tendencia(); meta();
+    leitura(); heroNum(); kpis(); tipologia(); desenharMapa(); orcamento(); regioes(); tabela(); negociacao(); extra(); tendencia(); meta();
     if (aberto) ficha(aberto);
   }
   function aplicar() {
