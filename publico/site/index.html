@@ -27,7 +27,7 @@
   })();
 </script>
 <link rel="stylesheet" href="assets/vendor/leaflet.css">
-<link rel="stylesheet" href="assets/radar.css?v=7">
+<link rel="stylesheet" href="assets/radar.css?v=8">
 <link rel="canonical" href="https://spradar.saadcloud.com.br/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Radar imobiliário de São Paulo","alternateName":"SP Radar","url":"https://spradar.saadcloud.com.br/","applicationCategory":"ReferenceApplication","operatingSystem":"Web","inLanguage":["pt-BR","en"],"isAccessibleForFree":true,"isPartOf":{"@type":"WebSite","name":"SaadCloud","url":"https://saadcloud.com.br/"},"author":{"@type":"Person","name":"Victor Saad","url":"https://saadcloud.com.br/"},"codeRepository":"https://github.com/victoorsaad/sp-radar"}</script>
 </head>
@@ -48,14 +48,13 @@
 
 <main>
   <section class="hero wrap">
-    <div class="kicker"><span lang="pt">Dados de mercado · atualizado todo dia</span><span lang="en">Market data · updated daily</span></div>
     <h1><span lang="pt">Radar imobiliário de São Paulo</span><span lang="en">São Paulo housing radar</span></h1>
     <p class="lede">
       <span lang="pt">Quanto custa, onde há oferta, quanto dá para negociar e quanto tempo um imóvel fica no mercado, em cada bairro da cidade. Para quem compra e para quem aluga, calculado todo dia a partir do histórico de mais de 300 mil anúncios.</span>
       <span lang="en">What it costs, where the supply is, how much room there is to negotiate and how long a home stays on the market, in every neighbourhood of the city. For buyers and renters, recomputed daily from the history of more than 300,000 listings.</span>
     </p>
     <div class="hero-cta">
-      <a class="btn" href="https://github.com/victoorsaad/sp-radar" target="_blank" rel="noopener"><svg class="gh-ico" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><span lang="pt">Código aberto no GitHub</span><span lang="en">Open source on GitHub</span><span class="gh-stars" hidden>★ <b class="gh-n"></b></span></a>
+      <a class="btn" href="https://github.com/victoorsaad/sp-radar" target="_blank" rel="noopener"><svg class="gh-ico" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><span lang="pt">Código aberto no GitHub</span><span lang="en">Open source on GitHub</span><span class="gh-stars" hidden><b class="gh-n"></b> <span lang="pt">estrela<span class="gh-pl">s</span></span><span lang="en">star<span class="gh-pl">s</span></span></span></a>
       <a class="btn ghost" href="#metodo"><span lang="pt">Como é calculado</span><span lang="en">How it's computed</span></a>
     </div>
     <aside class="callout" role="note">
@@ -93,7 +92,7 @@
   <div id="erro" class="wrap err" hidden><span lang="pt">Não foi possível carregar os dados. Tente recarregar a página.</span><span lang="en">Could not load the data. Try reloading the page.</span></div>
 
   <section class="sec wrap" id="panorama">
-    <div class="sec-h"><span class="num">01</span><h2><span lang="pt">O mercado agora</span><span lang="en">The market right now</span></h2></div>
+    <div class="sec-h"><h2><span lang="pt">O mercado agora</span><span lang="en">The market right now</span></h2></div>
     <p class="read" id="leitura"></p>
     <div class="kpis" id="kpis"></div>
     <div class="card gap">
@@ -104,7 +103,7 @@
   </section>
 
   <section class="sec wrap" id="mapa-sec">
-    <div class="sec-h"><span class="num">02</span><h2><span lang="pt">Onde</span><span lang="en">Where</span></h2>
+    <div class="sec-h"><h2><span lang="pt">Onde</span><span lang="en">Where</span></h2>
       <p><span lang="pt">Cada hexágono resume os anúncios daquela área. Passe o mouse para ver o bairro; aproxime para hexágonos menores, de ~0,7 km².</span><span lang="en">Each hexagon sums up the listings in that area. Hover to see the neighbourhood; zoom in for smaller ~0.7 km² hexagons.</span></p></div>
     <div class="map-ctl">
       <div class="chips" role="group" aria-label="Métrica do mapa / Map metric">
@@ -118,7 +117,7 @@
   </section>
 
   <section class="sec wrap" id="orcamento">
-    <div class="sec-h"><span class="num">03</span><h2><span lang="pt">Quanto o seu dinheiro compra</span><span lang="en">What your budget gets you</span></h2>
+    <div class="sec-h"><h2><span lang="pt">Quanto o seu dinheiro compra</span><span lang="en">What your budget gets you</span></h2>
       <p><span lang="pt">Escolha um teto e veja onde estão as opções. Útil para descobrir bairros que você não estava considerando.</span><span lang="en">Pick a ceiling and see where the options are. Handy for finding neighbourhoods you weren't considering.</span></p></div>
     <div class="budget">
       <div>
@@ -148,7 +147,7 @@
   </section>
 
   <section class="sec wrap" id="bairros">
-    <div class="sec-h"><span class="num">04</span><h2><span lang="pt">Bairro a bairro</span><span lang="en">Neighbourhood by neighbourhood</span></h2>
+    <div class="sec-h"><h2><span lang="pt">Bairro a bairro</span><span lang="en">Neighbourhood by neighbourhood</span></h2>
       <p><span lang="pt">Clique num bairro para ver a ficha completa: preço por quartos, faixa de preço, negociação e liquidez.</span><span lang="en">Click a neighbourhood for its full profile: price by bedrooms, price range, negotiation and liquidity.</span></p></div>
     <div class="filters">
       <input type="search" id="busca" placeholder="Buscar bairro / Search" aria-label="Buscar bairro / Search neighbourhood">
@@ -158,7 +157,7 @@
   </section>
 
   <section class="sec wrap" id="negociacao">
-    <div class="sec-h"><span class="num">05</span><h2><span lang="pt">Negociação e liquidez</span><span lang="en">Negotiation and liquidity</span></h2>
+    <div class="sec-h"><h2><span lang="pt">Negociação e liquidez</span><span lang="en">Negotiation and liquidity</span></h2>
       <p id="neg-p"></p></div>
     <div class="g2">
       <div class="card">
@@ -176,12 +175,12 @@
   </section>
 
   <section class="sec wrap" id="extra">
-    <div class="sec-h"><span class="num">06</span><h2 id="extra-h"></h2><p id="extra-p"></p></div>
+    <div class="sec-h"><h2 id="extra-h"></h2><p id="extra-p"></p></div>
     <div class="g2" id="extra-body"></div>
   </section>
 
   <section class="sec wrap" id="tendencia">
-    <div class="sec-h"><span class="num">07</span><h2><span lang="pt">Tendência</span><span lang="en">Trend</span></h2>
+    <div class="sec-h"><h2><span lang="pt">Tendência</span><span lang="en">Trend</span></h2>
       <p><span lang="pt">Semana a semana desde que a coleta passou a cobrir a cidade inteira.</span><span lang="en">Week by week since collection started covering the whole city.</span></p></div>
     <div class="g2">
       <div class="card">
@@ -203,12 +202,12 @@
   </section>
 
   <section class="sec wrap method" id="metodo">
-    <div class="sec-h"><span class="num">08</span><h2><span lang="pt">Como é calculado</span><span lang="en">How it's computed</span></h2></div>
+    <div class="sec-h"><h2><span lang="pt">Como é calculado</span><span lang="en">How it's computed</span></h2></div>
     <div class="g2 method-top">
       <a class="gh-card" href="https://github.com/victoorsaad/sp-radar" target="_blank" rel="noopener">
         <span class="gh-head"><svg class="gh-ico" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><span>victoorsaad / <b>sp-radar</b></span><span class="gh-badge">Public</span></span>
         <span class="gh-desc"><span lang="pt">Coletor diário, histórico de preços e este site, de ponta a ponta. Licença MIT.</span><span lang="en">Daily collector, price history and this site, end to end. MIT licensed.</span></span>
-        <span class="gh-meta"><span><i class="dot"></i>Python</span><span class="gh-stars" hidden>★ <b class="gh-n"></b></span><span class="gh-forks" hidden><span lang="pt">forks</span><span lang="en">forks</span> <b class="gh-f"></b></span><span class="gh-upd" hidden></span></span>
+        <span class="gh-meta"><span><i class="dot"></i>Python</span><span class="gh-stars" hidden><b class="gh-n"></b> <span lang="pt">estrela<span class="gh-pl">s</span></span><span lang="en">star<span class="gh-pl">s</span></span></span><span class="gh-forks" hidden><span lang="pt">forks</span><span lang="en">forks</span> <b class="gh-f"></b></span><span class="gh-upd" hidden></span></span>
         <span class="gh-go"><span lang="pt">Ver o código →</span><span lang="en">View the code →</span></span>
       </a>
       <div class="card">
@@ -263,7 +262,7 @@
 
 <script src="assets/vendor/leaflet.js"></script>
 <script src="assets/vendor/chart.umd.min.js"></script>
-<script src="assets/radar.js?v=7"></script>
+<script src="assets/radar.js?v=8"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "354930048dbc445c9ef025ea7dfbc98f"}'></script><!-- token público do beacon; gitleaks:allow -->
 </body>
 </html>

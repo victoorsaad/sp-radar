@@ -195,7 +195,7 @@
     $("bud-rank").innerHTML = top.map(function (x, i) {
       var b = x.b, sub = q === "t" ? b : (b.quartos[q] || {});
       var w = Math.round(100 * (st.budSort === "n" ? x.n : x.pct) / maxN);
-      return '<li><button type="button" data-bairro="' + esc(b.nome) + '"><span class="pos">' + String(i + 1).padStart(2, "0") + '</span><span class="nm">' + esc(b.nome) +
+      return '<li><button type="button" data-bairro="' + esc(b.nome) + '"><span class="pos">' + (i + 1) + '</span><span class="nm">' + esc(b.nome) +
         "<small>" + (sub.area ? L("no bairro: ", "area-wide: ") + nf(sub.area) + " m² · " : "") + (sub.m2 ? brl(sub.m2) + m2u() : "") + "</small></span>" +
         '<span class="vl">' + nf(x.n) + L(" opções", " options") + "<small>" + x.pct + L("% do bairro", "% of the area") + '</small></span><span class="track"><i style="width:' + w + '%"></i></span></button></li>';
     }).join("") || '<li class="dim" style="padding:14px 0">' + L("Nenhum bairro com 5 opções ou mais nessa faixa.", "No neighbourhood has 5 or more options in this range.") + "</li>";
@@ -221,21 +221,21 @@
       return typeof x === "string" ? dir * x.localeCompare(y) : dir * (x - y);
     });
     var head = "<thead><tr>" + cols.map(function (c) {
-      return '<th scope="col" data-k="' + c[0] + '" aria-sort="' + (c[0] === kk ? (dir > 0 ? "ascending" : "descending") : "none") + '">' + c[1] + "</th>";
+      return '<th scope="col" class="c-' + c[0] + '" data-k="' + c[0] + '" aria-sort="' + (c[0] === kk ? (dir > 0 ? "ascending" : "descending") : "none") + '">' + c[1] + "</th>";
     }).join("") + "</tr></thead>";
     var body = "<tbody>" + linhas.map(function (b) {
       return '<tr data-bairro="' + esc(b.nome) + '" tabindex="0">' + cols.map(function (c) {
         var v = b[c[0]];
         switch (c[0]) {
-          case "nome": return "<td>" + esc(v) + (b.regiao && b.regiao !== v ? "<small>" + esc(b.regiao) + "</small>" : "") + "</td>";
-          case "ativos": return "<td>" + nf(v) + "</td>";
-          case "m2": return "<td>" + brl(v) + '<span class="rng">' + k(b.m2_p25) + "–" + k(b.m2_p75) + "</span></td>";
-          case "preco": case "total": return "<td>" + brl(v, c[0] === "preco") + "</td>";
-          case "area": return "<td>" + nf(v) + " m²</td>";
-          case "pct_queda": return "<td>" + pctTxt(v) + "</td>";
-          case "corte": return "<td>" + (v == null ? "—" : nf(v, { maximumFractionDigits: 1 }) + "%") + "</td>";
-          case "dias": return "<td>" + nf(v) + "</td>";
-          case "rent": return "<td>" + (v == null ? "—" : nf(v, { maximumFractionDigits: 1 }) + "%") + "</td>";
+          case "nome": return '<td class="c-nome">' + esc(v) + (b.regiao && b.regiao !== v ? "<small>" + esc(b.regiao) + "</small>" : "") + "</td>";
+          case "ativos": return '<td class="c-ativos">' + nf(v) + "</td>";
+          case "m2": return '<td class="c-m2">' + brl(v) + '<span class="rng">' + k(b.m2_p25) + "–" + k(b.m2_p75) + "</span></td>";
+          case "preco": case "total": return '<td class="c-' + c[0] + '">' + brl(v, c[0] === "preco") + "</td>";
+          case "area": return '<td class="c-area">' + nf(v) + " m²</td>";
+          case "pct_queda": return '<td class="c-pct_queda">' + pctTxt(v) + "</td>";
+          case "corte": return '<td class="c-corte">' + (v == null ? "—" : nf(v, { maximumFractionDigits: 1 }) + "%") + "</td>";
+          case "dias": return '<td class="c-dias">' + nf(v) + "</td>";
+          case "rent": return '<td class="c-rent">' + (v == null ? "—" : nf(v, { maximumFractionDigits: 1 }) + "%") + "</td>";
         }
       }).join("") + "</tr>";
     }).join("") + "</tbody>";
@@ -307,7 +307,7 @@
       responsive: true, maintainAspectRatio: false, animation: false,
       interaction: { mode: "index", intersect: false },
       plugins: {
-        legend: { labels: { color: dim, boxWidth: 14, boxHeight: 2, font: { family: "Inter", size: 12 } } },
+        legend: { labels: { color: dim, boxWidth: 14, boxHeight: 2, font: { family: "Inter", size: 13 } } },
         tooltip: {
           backgroundColor: "#fbf9f4", titleColor: "#141412", bodyColor: "#5f5a51", borderColor: "rgba(20,20,18,.22)", borderWidth: 1,
           cornerRadius: 2, padding: 10, titleFont: { family: "Inter", weight: "500" }, bodyFont: { family: "Inter" },
@@ -315,8 +315,8 @@
         }
       },
       scales: {
-        x: { ticks: { color: dim, maxRotation: 0, autoSkipPadding: 18, font: { family: "Inter", size: 11 } }, grid: { display: false }, border: { color: "rgba(20,20,18,.2)" } },
-        y: { ticks: { color: dim, font: { family: "Inter", size: 11 }, callback: function (v) { return yFmt(v); } }, grid: { color: grid }, border: { display: false } }
+        x: { ticks: { color: dim, maxRotation: 0, autoSkipPadding: 18, font: { family: "Inter", size: 13 } }, grid: { display: false }, border: { color: "rgba(20,20,18,.2)" } },
+        y: { ticks: { color: dim, font: { family: "Inter", size: 13 }, callback: function (v) { return yFmt(v); } }, grid: { color: grid }, border: { display: false } }
       }
     };
     if (xFmt) o.scales.x.ticks.callback = xFmt;
@@ -352,9 +352,9 @@
     var maxA = Math.max.apply(null, bs.map(function (b) { return b.ativos; }));
     var o2 = baseOpts(function (v) { return nf(v); }, function (v) { return k(v); });
     o2.plugins.legend.display = false; o2.interaction = { mode: "nearest", intersect: true };
-    o2.scales.x.type = "linear"; o2.scales.x.title = { display: true, text: "R$" + m2u(), color: css("--mute-l"), font: { family: "Inter", size: 11 } };
+    o2.scales.x.type = "linear"; o2.scales.x.title = { display: true, text: "R$" + m2u(), color: css("--mute-l"), font: { family: "Inter", size: 13 } };
     o2.scales.x.grid = { color: "rgba(20,20,18,.06)" };
-    o2.scales.y.title = { display: true, text: L("dias até sair", "days on market"), color: css("--mute-l"), font: { family: "Inter", size: 11 } };
+    o2.scales.y.title = { display: true, text: L("dias até sair", "days on market"), color: css("--mute-l"), font: { family: "Inter", size: 13 } };
     o2.plugins.tooltip.callbacks = {
       title: function (it) { return it[0].raw.nome; },
       label: function (c) { return " " + brl(c.raw.x) + m2u() + " · " + nf(c.raw.y) + L(" dias · ", " days · ") + nf(c.raw.n) + L(" anúncios", " listings"); }
@@ -499,6 +499,7 @@
     .then(function (g) {
       if (!g) return;
       document.querySelectorAll(".gh-n").forEach(function (e) { e.textContent = nf(g.stargazers_count); });
+      document.querySelectorAll(".gh-pl").forEach(function (e) { e.hidden = g.stargazers_count === 1; });
       document.querySelectorAll(".gh-f").forEach(function (e) { e.textContent = nf(g.forks_count); });
       document.querySelectorAll(".gh-stars, .gh-forks").forEach(function (e) { e.hidden = false; });
       document.querySelectorAll(".gh-upd").forEach(function (e) {
